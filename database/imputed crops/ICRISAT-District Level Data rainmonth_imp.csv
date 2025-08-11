@@ -1,0 +1,420 @@
+Dist Code,Year,State Code,State Name,Dist Name,LENGTH OF GROWING PERIOD DAYS (Number)
+1,Not Applicable,14,Chhattisgarh,Durg,164.0
+2,Not Applicable,14,Chhattisgarh,Bastar,194.0
+3,Not Applicable,14,Chhattisgarh,Raipur,201.0
+4,Not Applicable,14,Chhattisgarh,Bilaspur,208.0
+5,Not Applicable,14,Chhattisgarh,Raigarh,201.0
+6,Not Applicable,14,Chhattisgarh,Surguja,201.0
+7,Not Applicable,6,Madhya Pradesh,Jabalpur,254.0
+8,Not Applicable,6,Madhya Pradesh,Balaghat,201.0
+9,Not Applicable,6,Madhya Pradesh,Chhindwara,231.0
+10,Not Applicable,6,Madhya Pradesh,Narsinghpur,245.0
+11,Not Applicable,6,Madhya Pradesh,Seoni,240.0
+12,Not Applicable,6,Madhya Pradesh,Mandla,194.0
+13,Not Applicable,6,Madhya Pradesh,Sagar,194.0
+14,Not Applicable,6,Madhya Pradesh,Damoh,201.0
+15,Not Applicable,6,Madhya Pradesh,Tikamgarh,178.0
+16,Not Applicable,6,Madhya Pradesh,Chhatarpur,194.0
+17,Not Applicable,6,Madhya Pradesh,Panna,280.0
+18,Not Applicable,6,Madhya Pradesh,Rewa,178.0
+19,Not Applicable,6,Madhya Pradesh,Sidhi,200.0
+20,Not Applicable,6,Madhya Pradesh,Satna,194.0
+21,Not Applicable,6,Madhya Pradesh,Shahdol,201.0
+22,Not Applicable,6,Madhya Pradesh,Gwalior,217.0
+23,Not Applicable,6,Madhya Pradesh,Shivpuri,210.0
+24,Not Applicable,6,Madhya Pradesh,Guna,224.0
+25,Not Applicable,6,Madhya Pradesh,Datia,210.0
+26,Not Applicable,6,Madhya Pradesh,Morena,210.0
+27,Not Applicable,6,Madhya Pradesh,Bhind,217.0
+28,Not Applicable,6,Madhya Pradesh,Indore,194.0
+29,Not Applicable,6,Madhya Pradesh,Ratlam,194.0
+30,Not Applicable,6,Madhya Pradesh,Ujjain,194.0
+31,Not Applicable,6,Madhya Pradesh,Mandsaur,190.0
+32,Not Applicable,6,Madhya Pradesh,Dewas,210.0
+33,Not Applicable,6,Madhya Pradesh,Dhar,178.0
+34,Not Applicable,6,Madhya Pradesh,Jhabua,170.0
+35,Not Applicable,6,Madhya Pradesh,Khargone,195.0
+36,Not Applicable,6,Madhya Pradesh,Khandwa,201.0
+37,Not Applicable,6,Madhya Pradesh,Sehore,210.0
+38,Not Applicable,6,Madhya Pradesh,Raisen,224.0
+39,Not Applicable,6,Madhya Pradesh,Vidisha,220.0
+40,Not Applicable,6,Madhya Pradesh,Betul,229.0
+41,Not Applicable,6,Madhya Pradesh,Rajgarh,201.0
+42,Not Applicable,6,Madhya Pradesh,Shajapur,210.0
+43,Not Applicable,6,Madhya Pradesh,Hoshangabad,224.0
+44,Not Applicable,1,Andhra Pradesh,Srikakulam,185.0
+45,Not Applicable,1,Andhra Pradesh,Visakhapatnam,171.0
+46,Not Applicable,1,Andhra Pradesh,East Godavari,229.0
+47,Not Applicable,1,Andhra Pradesh,West Godavari,210.0
+48,Not Applicable,1,Andhra Pradesh,Krishna,185.0
+49,Not Applicable,1,Andhra Pradesh,Guntur,164.0
+50,Not Applicable,1,Andhra Pradesh,S.P.S.Nellore,134.0
+51,Not Applicable,1,Andhra Pradesh,Kurnool,148.0
+52,Not Applicable,1,Andhra Pradesh,Anantapur,120.0
+53,Not Applicable,1,Andhra Pradesh,Kadapa YSR,165.0
+54,Not Applicable,1,Andhra Pradesh,Chittoor,164.0
+55,Not Applicable,20,Telangana,Hyderabad,150.0
+56,Not Applicable,20,Telangana,Nizamabad,141.0
+57,Not Applicable,20,Telangana,Medak,165.0
+58,Not Applicable,20,Telangana,Mahabubnagar,141.0
+59,Not Applicable,20,Telangana,Nalgonda,175.0
+60,Not Applicable,20,Telangana,Warangal,201.0
+61,Not Applicable,20,Telangana,Khammam,185.0
+62,Not Applicable,20,Telangana,Karimnagar,182.0
+63,Not Applicable,20,Telangana,Adilabad,178.0
+65,Not Applicable,5,Karnataka,Kolar,120.0
+66,Not Applicable,5,Karnataka,Tumkur,189.0
+67,Not Applicable,5,Karnataka,Mysore,248.0
+68,Not Applicable,5,Karnataka,Mandya,230.0
+69,Not Applicable,5,Karnataka,Hassan,231.0
+70,Not Applicable,5,Karnataka,Shimoge,207.0
+71,Not Applicable,5,Karnataka,Chickmagalur,220.0
+72,Not Applicable,5,Karnataka,Chitradurga,134.0
+73,Not Applicable,5,Karnataka,Bellary,104.0
+74,Not Applicable,5,Karnataka,Dharwad,118.0
+75,Not Applicable,5,Karnataka,Belgaum,178.0
+76,Not Applicable,5,Karnataka,Bijapur,97.0
+77,Not Applicable,5,Karnataka,Bidar,171.0
+78,Not Applicable,5,Karnataka,Raichur,164.0
+79,Not Applicable,5,Karnataka,Gulbarga,171.0
+80,Not Applicable,5,Karnataka,Dakshina Kannada,232.0
+81,Not Applicable,5,Karnataka,Uttara Kannada,159.0
+82,Not Applicable,5,Karnataka,Kodagu,150.0
+83,Not Applicable,11,Tamil Nadu,Chengalpattu MGR Kancheepuram,194.0
+84,Not Applicable,11,Tamil Nadu,South Arcot Cuddalore,185.0
+85,Not Applicable,11,Tamil Nadu,North Arcot Vellore,155.0
+86,Not Applicable,11,Tamil Nadu,Salem,171.0
+87,Not Applicable,11,Tamil Nadu,Coimbatore,90.0
+88,Not Applicable,11,Tamil Nadu,Tiruchirapalli Trichy,164.0
+89,Not Applicable,11,Tamil Nadu,Thanjavur,157.0
+90,Not Applicable,11,Tamil Nadu,Madurai,171.0
+91,Not Applicable,11,Tamil Nadu,Ramananthapuram,120.0
+92,Not Applicable,11,Tamil Nadu,Thirunelveli,111.0
+93,Not Applicable,11,Tamil Nadu,The Nilgiris,300.0
+94,Not Applicable,11,Tamil Nadu,Kanyakumari,268.0
+96,Not Applicable,7,Maharashtra,Thane,182.0
+97,Not Applicable,7,Maharashtra,Raigad,195.0
+98,Not Applicable,7,Maharashtra,Ratnagiri,192.0
+99,Not Applicable,7,Maharashtra,Nasik,217.0
+100,Not Applicable,7,Maharashtra,Dhule,180.0
+101,Not Applicable,7,Maharashtra,Jalgaon,180.0
+102,Not Applicable,7,Maharashtra,Ahmednagar,164.0
+103,Not Applicable,7,Maharashtra,Pune,171.0
+104,Not Applicable,7,Maharashtra,Satara,180.0
+105,Not Applicable,7,Maharashtra,Sangli,178.0
+106,Not Applicable,7,Maharashtra,Solapur,164.0
+107,Not Applicable,7,Maharashtra,Kolhapur,196.0
+108,Not Applicable,7,Maharashtra,Aurangabad,171.0
+109,Not Applicable,7,Maharashtra,Parbhani,162.0
+110,Not Applicable,7,Maharashtra,Beed,171.0
+111,Not Applicable,7,Maharashtra,Nanded,182.0
+112,Not Applicable,7,Maharashtra,Osmanabad,171.0
+113,Not Applicable,7,Maharashtra,Buldhana,185.0
+114,Not Applicable,7,Maharashtra,Akola,194.0
+115,Not Applicable,7,Maharashtra,Amarawati,171.0
+116,Not Applicable,7,Maharashtra,Yeotmal,195.0
+117,Not Applicable,7,Maharashtra,Wardha,194.0
+118,Not Applicable,7,Maharashtra,Nagpur,180.0
+119,Not Applicable,7,Maharashtra,Bhandara,200.0
+120,Not Applicable,7,Maharashtra,Chandrapur,164.0
+121,Not Applicable,3,Gujarat,Ahmedabad,178.0
+122,Not Applicable,3,Gujarat,Amreli,150.0
+123,Not Applicable,3,Gujarat,Banaskantha,120.0
+124,Not Applicable,3,Gujarat,Bharuch,201.0
+125,Not Applicable,3,Gujarat,Vadodara,178.0
+126,Not Applicable,3,Gujarat,Bhavnagar,180.0
+127,Not Applicable,3,Gujarat,Valsad,174.0
+128,Not Applicable,3,Gujarat,Dangs,171.0
+129,Not Applicable,3,Gujarat,Jamnagar,97.0
+130,Not Applicable,3,Gujarat,Junagadh,118.0
+131,Not Applicable,3,Gujarat,Kheda,178.0
+132,Not Applicable,3,Gujarat,Kutch,80.0
+133,Not Applicable,3,Gujarat,Mehsana,150.0
+134,Not Applicable,3,Gujarat,Panchmahal,170.0
+135,Not Applicable,3,Gujarat,Rajkot,134.0
+136,Not Applicable,3,Gujarat,Sabarkantha,165.0
+137,Not Applicable,3,Gujarat,Surat,180.0
+138,Not Applicable,3,Gujarat,Surendranagar,180.0
+139,Not Applicable,10,Rajasthan,Ajmer,104.0
+140,Not Applicable,10,Rajasthan,Alwar,120.0
+141,Not Applicable,10,Rajasthan,Banswara,177.0
+142,Not Applicable,10,Rajasthan,Barmer,58.0
+143,Not Applicable,10,Rajasthan,Bharatpur,180.0
+144,Not Applicable,10,Rajasthan,Bhilwara,150.0
+145,Not Applicable,10,Rajasthan,Bikaner,44.0
+146,Not Applicable,10,Rajasthan,Bundi,201.0
+147,Not Applicable,10,Rajasthan,Chittorgarh,194.0
+148,Not Applicable,10,Rajasthan,Churu,60.0
+149,Not Applicable,10,Rajasthan,Dungarpur,170.0
+150,Not Applicable,10,Rajasthan,Ganganagar,58.0
+151,Not Applicable,10,Rajasthan,Jaipur,111.0
+152,Not Applicable,10,Rajasthan,Jaisalmer,28.0
+153,Not Applicable,10,Rajasthan,Jalore,90.0
+154,Not Applicable,10,Rajasthan,Jhalawar,194.0
+155,Not Applicable,10,Rajasthan,Jhunjhunu,90.0
+156,Not Applicable,10,Rajasthan,Jodhpur,88.0
+157,Not Applicable,10,Rajasthan,Kota,201.0
+158,Not Applicable,10,Rajasthan,Nagaur,82.0
+159,Not Applicable,10,Rajasthan,Pali,95.0
+160,Not Applicable,10,Rajasthan,Swami Madhopur,180.0
+161,Not Applicable,10,Rajasthan,Sikar,90.0
+162,Not Applicable,10,Rajasthan,Sirohi,120.0
+163,Not Applicable,10,Rajasthan,Tonk,150.0
+164,Not Applicable,10,Rajasthan,Udaipur,159.0
+165,Not Applicable,9,Punjab,Gurdaspur,180.0
+166,Not Applicable,9,Punjab,Amritsar,149.0
+167,Not Applicable,9,Punjab,Kapurthala,180.0
+168,Not Applicable,9,Punjab,Jalandhar,180.0
+169,Not Applicable,9,Punjab,Hoshiarpur,210.0
+170,Not Applicable,9,Punjab,Roopnagar,240.0
+171,Not Applicable,9,Punjab,Ludhiana,210.0
+172,Not Applicable,9,Punjab,Ferozpur,104.0
+173,Not Applicable,9,Punjab,Faridkot,98.0
+174,Not Applicable,9,Punjab,Bhatinda,90.0
+175,Not Applicable,9,Punjab,Sangrur,150.0
+176,Not Applicable,9,Punjab,Patiala,194.0
+177,Not Applicable,4,Haryana,Hissar,74.0
+178,Not Applicable,4,Haryana,Sirsa,80.0
+179,Not Applicable,4,Haryana,Bhiwani,90.0
+180,Not Applicable,4,Haryana,Gurgaon,150.0
+181,Not Applicable,4,Haryana,Jind,101.0
+182,Not Applicable,4,Haryana,Mahendragarh,95.0
+183,Not Applicable,4,Haryana,Ambala,195.0
+184,Not Applicable,4,Haryana,Karnal,180.0
+185,Not Applicable,4,Haryana,Kurukshetra,210.0
+186,Not Applicable,4,Haryana,Rohtak,120.0
+187,Not Applicable,4,Haryana,Sonepat,135.0
+188,Not Applicable,4,Haryana,Faridabad,180.0
+189,Not Applicable,12,Uttar Pradesh,Saharanpur,180.0
+190,Not Applicable,12,Uttar Pradesh,Muzaffarnagar,180.0
+191,Not Applicable,12,Uttar Pradesh,Meerut,134.0
+192,Not Applicable,12,Uttar Pradesh,Buland Shahar,180.0
+193,Not Applicable,12,Uttar Pradesh,Ghaziabad,134.0
+194,Not Applicable,12,Uttar Pradesh,Aligarh,187.0
+195,Not Applicable,12,Uttar Pradesh,Mathura,180.0
+196,Not Applicable,12,Uttar Pradesh,Agra,187.0
+197,Not Applicable,12,Uttar Pradesh,Mainpuri,217.0
+198,Not Applicable,12,Uttar Pradesh,Etah,160.0
+199,Not Applicable,12,Uttar Pradesh,Bareilly,224.0
+200,Not Applicable,12,Uttar Pradesh,Budaun,215.0
+201,Not Applicable,12,Uttar Pradesh,Moradabad,210.0
+202,Not Applicable,12,Uttar Pradesh,Shahjahanpur,210.0
+203,Not Applicable,12,Uttar Pradesh,Pilibhit,230.0
+204,Not Applicable,12,Uttar Pradesh,Rampur,230.0
+205,Not Applicable,12,Uttar Pradesh,Bijnor,210.0
+206,Not Applicable,12,Uttar Pradesh,Farrukhabad,210.0
+207,Not Applicable,12,Uttar Pradesh,Etawah,210.0
+209,Not Applicable,12,Uttar Pradesh,Fatehpur,180.0
+210,Not Applicable,12,Uttar Pradesh,Allahabad,164.0
+211,Not Applicable,12,Uttar Pradesh,Jhansi,194.0
+212,Not Applicable,12,Uttar Pradesh,Lalitpur,195.0
+213,Not Applicable,12,Uttar Pradesh,Jalaun,224.0
+214,Not Applicable,12,Uttar Pradesh,Hamirpur,210.0
+215,Not Applicable,12,Uttar Pradesh,Banda,188.0
+216,Not Applicable,12,Uttar Pradesh,Varanasi,224.0
+217,Not Applicable,12,Uttar Pradesh,Mirzpur,210.0
+218,Not Applicable,12,Uttar Pradesh,Jaunpur,210.0
+219,Not Applicable,12,Uttar Pradesh,Ghazipur,230.0
+220,Not Applicable,12,Uttar Pradesh,Ballia,230.0
+221,Not Applicable,12,Uttar Pradesh,Gorakhpur,240.0
+222,Not Applicable,12,Uttar Pradesh,Deoria,230.0
+223,Not Applicable,12,Uttar Pradesh,Basti,187.0
+224,Not Applicable,12,Uttar Pradesh,Azamgarh,235.0
+225,Not Applicable,12,Uttar Pradesh,Lucknow,217.0
+226,Not Applicable,12,Uttar Pradesh,Unnao,210.0
+227,Not Applicable,12,Uttar Pradesh,Rae - Bareily,208.0
+228,Not Applicable,12,Uttar Pradesh,Sitapur,230.0
+229,Not Applicable,12,Uttar Pradesh,Hardoi,210.0
+230,Not Applicable,12,Uttar Pradesh,Kheri,231.0
+231,Not Applicable,12,Uttar Pradesh,Faizabad,240.0
+232,Not Applicable,12,Uttar Pradesh,Gonda,240.0
+233,Not Applicable,12,Uttar Pradesh,Bahraich,231.0
+234,Not Applicable,12,Uttar Pradesh,Sultanpur,220.0
+235,Not Applicable,12,Uttar Pradesh,Pratapgarh,188.0
+236,Not Applicable,12,Uttar Pradesh,Barabanki,224.0
+237,Not Applicable,16,Uttarakhand,Nainital,270.0
+238,Not Applicable,16,Uttarakhand,Almorah,230.0
+239,Not Applicable,16,Uttarakhand,Pithorgarh,286.0
+240,Not Applicable,16,Uttarakhand,Chamoli,277.0
+241,Not Applicable,16,Uttarakhand,Uttar Kashi,287.0
+242,Not Applicable,16,Uttarakhand,Tehri Garhwal,270.0
+243,Not Applicable,16,Uttarakhand,Garhwal,280.0
+244,Not Applicable,16,Uttarakhand,Dehradun,307.0
+501,Not Applicable,14,Chhattisgarh,Rajnandgaon,165.0
+502,Not Applicable,6,Madhya Pradesh,Bhopal,231.0
+503,Not Applicable,1,Andhra Pradesh,Vizianagaram,190.0
+504,Not Applicable,1,Andhra Pradesh,Prakasam,185.0
+506,Not Applicable,11,Tamil Nadu,Dharmapuri,175.0
+507,Not Applicable,11,Tamil Nadu,Periyar(Erode),300.0
+508,Not Applicable,11,Tamil Nadu,Pudukkottai,168.0
+509,Not Applicable,11,Tamil Nadu,Dindigul Anna,270.0
+510,Not Applicable,11,Tamil Nadu,Virudhunagar Kamarajar,168.0
+512,Not Applicable,11,Tamil Nadu,Sivagangai Pasumpon,170.0
+513,Not Applicable,11,Tamil Nadu,Chidambanar Toothukudi,110.0
+514,Not Applicable,7,Maharashtra,Jalna,169.0
+515,Not Applicable,7,Maharashtra,Latur,173.0
+516,Not Applicable,7,Maharashtra,Gadchiroli,190.0
+517,Not Applicable,7,Maharashtra,Sindhudurg,190.0
+518,Not Applicable,3,Gujarat,Gandhinagar,168.0
+519,Not Applicable,10,Rajasthan,Dholpur,200.0
+520,Not Applicable,20,Telangana,Rangareddy,150.0
+521,Not Applicable,11,Tamil Nadu,Thiruvannamalai,120.0
+523,Not Applicable,4,Haryana,Yamunanagar,270.0
+524,Not Applicable,4,Haryana,Kaithal,180.0
+525,Not Applicable,4,Haryana,Panipat,160.0
+526,Not Applicable,4,Haryana,Rewari,150.0
+527,Not Applicable,16,Uttarakhand,Haridwar,190.0
+528,Not Applicable,12,Uttar Pradesh,Firozabad,187.0
+529,Not Applicable,12,Uttar Pradesh,Sonbhadra,194.0
+530,Not Applicable,12,Uttar Pradesh,Mau,230.0
+531,Not Applicable,12,Uttar Pradesh,Mahrajgani,241.0
+532,Not Applicable,12,Uttar Pradesh,Sidharthnagar,240.0
+547,Not Applicable,12,Uttar Pradesh,Kanpur Nagar,187.0
+548,Not Applicable,12,Uttar Pradesh,Kanpur Dehat,210.0
+549,Not Applicable,5,Karnataka,Bangalore(Rural),217.0
+550,Not Applicable,5,Karnataka,Bangalore(Urban),217.0
+601,Not Applicable,17,Assam,Cachar,192.7550432276657
+602,Not Applicable,17,Assam,Darrang,192.7550432276657
+603,Not Applicable,17,Assam,Dibrugarh,192.7550432276657
+604,Not Applicable,17,Assam,Goalpara,192.7550432276657
+605,Not Applicable,17,Assam,Kamrup,192.7550432276657
+606,Not Applicable,17,Assam,Karbi Anglong,192.7550432276657
+607,Not Applicable,17,Assam,Lakhimpur,192.7550432276657
+608,Not Applicable,17,Assam,North Cachar Hil,192.7550432276657
+609,Not Applicable,17,Assam,Nagaon,192.7550432276657
+610,Not Applicable,17,Assam,Sibsagar,192.7550432276657
+615,Not Applicable,17,Assam,Barpeta,192.7550432276657
+616,Not Applicable,17,Assam,Dhubri,192.7550432276657
+617,Not Applicable,17,Assam,Golaghat,192.7550432276657
+618,Not Applicable,17,Assam,Jorhat,192.7550432276657
+619,Not Applicable,17,Assam,Karimganj,192.7550432276657
+620,Not Applicable,17,Assam,Kokrajhar,192.7550432276657
+621,Not Applicable,17,Assam,Nalbari,192.7550432276657
+622,Not Applicable,17,Assam,Sonitpur,192.7550432276657
+626,Not Applicable,18,Himachal Pradesh,Bilashpur,192.7550432276657
+627,Not Applicable,18,Himachal Pradesh,Chamba,192.7550432276657
+628,Not Applicable,18,Himachal Pradesh,Hamirpur,192.7550432276657
+629,Not Applicable,18,Himachal Pradesh,Kangra,192.7550432276657
+630,Not Applicable,18,Himachal Pradesh,Kinnaur,192.7550432276657
+631,Not Applicable,18,Himachal Pradesh,Kullu,192.7550432276657
+632,Not Applicable,18,Himachal Pradesh,Lahul & Spiti,192.7550432276657
+633,Not Applicable,18,Himachal Pradesh,Solan,192.7550432276657
+634,Not Applicable,18,Himachal Pradesh,Mandi,192.7550432276657
+635,Not Applicable,18,Himachal Pradesh,Shimla,192.7550432276657
+636,Not Applicable,18,Himachal Pradesh,Sirmaur,192.7550432276657
+637,Not Applicable,18,Himachal Pradesh,Una,192.7550432276657
+651,Not Applicable,19,Kerala,Alappuzha,192.7550432276657
+652,Not Applicable,19,Kerala,Kannur,192.7550432276657
+653,Not Applicable,19,Kerala,Eranakulam,192.7550432276657
+654,Not Applicable,19,Kerala,Idukki,192.7550432276657
+655,Not Applicable,19,Kerala,Kottayam,192.7550432276657
+656,Not Applicable,19,Kerala,Kozhikode,192.7550432276657
+657,Not Applicable,19,Kerala,Malappuram,192.7550432276657
+658,Not Applicable,19,Kerala,Palakkad,192.7550432276657
+659,Not Applicable,19,Kerala,Kollam,192.7550432276657
+660,Not Applicable,19,Kerala,Thrissur,192.7550432276657
+661,Not Applicable,19,Kerala,Thiruvananthapuram,192.7550432276657
+662,Not Applicable,19,Kerala,Kasaragod,192.7550432276657
+663,Not Applicable,19,Kerala,Pathanamthitta,192.7550432276657
+664,Not Applicable,19,Kerala,Wayanad,192.7550432276657
+701,Not Applicable,8,Orissa,Balasore,217.0
+702,Not Applicable,8,Orissa,Bolangir,180.0
+703,Not Applicable,8,Orissa,Cuttack,217.0
+704,Not Applicable,8,Orissa,Dhenkanal,217.0
+705,Not Applicable,8,Orissa,Ganjam,187.0
+706,Not Applicable,8,Orissa,Kalahandi,185.0
+707,Not Applicable,8,Orissa,Keonjhar,217.0
+708,Not Applicable,8,Orissa,Koraput,210.0
+709,Not Applicable,8,Orissa,Mayurbhanja,240.0
+710,Not Applicable,8,Orissa,Phulbani(Kandhamal),215.0
+711,Not Applicable,8,Orissa,Puri,217.0
+712,Not Applicable,8,Orissa,Sambalpur,180.0
+713,Not Applicable,8,Orissa,Sundargarh,200.0
+801,Not Applicable,13,West Bengal,24 - Paraganas South,265.0
+802,Not Applicable,13,West Bengal,24 - Paraganas North,269.0
+803,Not Applicable,13,West Bengal,Nadia,269.0
+804,Not Applicable,13,West Bengal,Murshidabad,271.0
+805,Not Applicable,13,West Bengal,Burdwan,250.0
+806,Not Applicable,13,West Bengal,Birbhum,261.0
+807,Not Applicable,13,West Bengal,Bankura,254.0
+810,Not Applicable,13,West Bengal,Hooghly,266.0
+811,Not Applicable,13,West Bengal,Howrah,267.0
+812,Not Applicable,13,West Bengal,Jalpaiguri,299.0
+813,Not Applicable,13,West Bengal,Darjeeling,307.0
+814,Not Applicable,13,West Bengal,Malda,282.0
+816,Not Applicable,13,West Bengal,Cooch Behar,263.0
+817,Not Applicable,13,West Bengal,Purulia,225.0
+821,Not Applicable,13,West Bengal,Kolkata,266.0
+823,Not Applicable,13,West Bengal,East Midnapore Purba Midnapore,258.0
+824,Not Applicable,13,West Bengal,West Midnapore,258.0
+902,Not Applicable,2,Bihar,Muzaffarpur,240.0
+903,Not Applicable,2,Bihar,Darbhanga,247.0
+904,Not Applicable,2,Bihar,Saharsa,230.0
+905,Not Applicable,2,Bihar,Purnea,257.0
+906,Not Applicable,2,Bihar,Saran,224.0
+907,Not Applicable,2,Bihar,Patna,224.0
+908,Not Applicable,2,Bihar,Mungair,224.0
+909,Not Applicable,2,Bihar,Bhagalpur,210.0
+910,Not Applicable,15,Jharkhand,Santhal Paragana Dumka,264.0
+912,Not Applicable,2,Bihar,Gaya,222.0
+913,Not Applicable,15,Jharkhand,Hazaribagh,210.0
+914,Not Applicable,15,Jharkhand,Dhanbad,210.0
+915,Not Applicable,15,Jharkhand,Palamau,201.0
+916,Not Applicable,15,Jharkhand,Ranchi,277.0
+918,Not Applicable,2,Bihar,Nalanda,222.0
+919,Not Applicable,2,Bihar,Nawada,215.0
+920,Not Applicable,2,Bihar,Aurangabad,186.0
+921,Not Applicable,2,Bihar,Bhojpur,208.0
+922,Not Applicable,2,Bihar,Rohtas,210.0
+923,Not Applicable,2,Bihar,Siwan,217.0
+924,Not Applicable,2,Bihar,Gopalganj,217.0
+925,Not Applicable,2,Bihar,Champaran(East),247.0
+926,Not Applicable,2,Bihar,Champaran(West,240.0
+927,Not Applicable,2,Bihar,Vaishali,235.0
+928,Not Applicable,2,Bihar,Sitamarhi,240.0
+929,Not Applicable,2,Bihar,Madhubani,240.0
+930,Not Applicable,2,Bihar,Samastipur,233.0
+931,Not Applicable,2,Bihar,Begusarai,231.0
+932,Not Applicable,2,Bihar,Katihar,254.0
+933,Not Applicable,15,Jharkhand,Giridih,210.0
+934,Not Applicable,2,Bihar,Jehanabad,210.0
+935,Not Applicable,2,Bihar,Madhepura,254.0
+936,Not Applicable,2,Bihar,Khagaria,225.0
+937,Not Applicable,15,Jharkhand,Godda,230.0
+938,Not Applicable,15,Jharkhand,Sahebganj,240.0
+940,Not Applicable,15,Jharkhand,Devghar Deogarh,215.0
+941,Not Applicable,15,Jharkhand,Lohardagga,210.0
+942,Not Applicable,15,Jharkhand,Gumla,201.0
+943,Not Applicable,15,Jharkhand,Singhbhum East,240.0
+944,Not Applicable,15,Jharkhand,Singhbhum West,250.0
+945,Not Applicable,2,Bihar,Araria,254.0
+946,Not Applicable,2,Bihar,Kishanganj,227.0
+952,Not Applicable,15,Jharkhand,Chatra,192.7550432276657
+953,Not Applicable,15,Jharkhand,Bokaro,192.7550432276657
+954,Not Applicable,15,Jharkhand,Gadva Garhwa,192.7550432276657
+955,Not Applicable,15,Jharkhand,Khodrama Koderma,192.7550432276657
+957,Not Applicable,15,Jharkhand,Pakund Pakur,192.7550432276657
+962,Not Applicable,15,Jharkhand,Jamtara,192.7550432276657
+963,Not Applicable,15,Jharkhand,Latehar,192.7550432276657
+964,Not Applicable,15,Jharkhand,Sariakela Kharsawan,192.7550432276657
+965,Not Applicable,15,Jharkhand,Simdega,192.7550432276657
+999,Not Applicable,11,Tamil Nadu,Chennai,192.7550432276657
+1030,Not Applicable,16,Uttarakhand,Udham Singh Nagar,192.7550432276657
+1032,Not Applicable,16,Uttarakhand,Bageshwar,192.7550432276657
+1035,Not Applicable,16,Uttarakhand,Champavat,192.7550432276657
+1043,Not Applicable,16,Uttarakhand,Rudraprayag,192.7550432276657
+1047,Not Applicable,17,Assam,Bongaigaon,192.7550432276657
+1048,Not Applicable,17,Assam,Dhemaji,192.7550432276657
+1049,Not Applicable,17,Assam,Hailakandi,192.7550432276657
+1050,Not Applicable,17,Assam,Marigaon,192.7550432276657
+1051,Not Applicable,17,Assam,Tinsukia,192.7550432276657
+1055,Not Applicable,14,Chhattisgarh,Dantewara,192.7550432276657
+1056,Not Applicable,14,Chhattisgarh,Dhamtari,192.7550432276657
+1059,Not Applicable,14,Chhattisgarh,Janjgir,192.7550432276657
+1065,Not Applicable,14,Chhattisgarh,Koriya,192.7550432276657
+1066,Not Applicable,14,Chhattisgarh,Jashpur,192.7550432276657
+1067,Not Applicable,14,Chhattisgarh,Korba,192.7550432276657
+1068,Not Applicable,14,Chhattisgarh,Kawardha,192.7550432276657
+1069,Not Applicable,14,Chhattisgarh,Mahasmund,192.7550432276657
+1070,Not Applicable,14,Chhattisgarh,Kanker,192.7550432276657
+1076,Not Applicable,7,Maharashtra,Mumbai sub,193.0

@@ -11,24 +11,36 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- API Keys and Environment ---
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 DOCUMENT_DIRECTORY = os.getenv("DOCUMENT_DIRECTORY", "documents")
-VALID_API_KEY = os.getenv('VALID_API_KEY', 'your-default-api-key')
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-if not GOOGLE_API_KEY or not PINECONE_API_KEY:
-    logging.error("API keys for Google or Pinecone are not set in the environment variables.")
-    raise ValueError("Missing API keys. Please set GOOGLE_API_KEY and PINECONE_API_KEY in your .env file.")
+# Directory for CSV rows specific to capital-csv-index
+CAPITAL_CSV_DIRECTORY = os.getenv("CAPITAL_CSV_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\imputed crops")
 
-# Set Google API key in the environment for LangChain modules
-os.environ['GOOGLE_API_KEY'] = GOOGLE_API_KEY
+# Directory containing PDF and other unstructured documents for rag-chatbot-index
+PDF_DIRECTORY = os.getenv("PDF_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\pdf")
+
+
+
 
 # --- Model and VectorDB Configuration ---
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
-EMBEDDING_MODEL = "models/text-embedding-004"
-LLM_MODEL = "gemini-2.0-flash-lite" # More standard model name
-EMBEDDING_DIMENSION = 768      # For 'text-embedding-004'
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")  # Backward compatibility (primary index)
 
+# Support multiple Pinecone indexes (comma separated). Example in .env:
+# PINECONE_INDEX_NAMES="rag-chatbot-index,capital-csv-index"
+_multi_indexes_raw = os.getenv("PINECONE_INDEX_NAMES", "")
+if _multi_indexes_raw.strip():
+	PINECONE_INDEX_NAMES = [name.strip() for name in _multi_indexes_raw.split(",") if name.strip()]
+else:
+	# Fallback to just the single legacy index var if multi not provided
+	PINECONE_INDEX_NAMES = [p for p in [PINECONE_INDEX_NAME] if p]
+EMBEDDING_MODEL = "BAAI/bge-large-en-v1.5"  # HuggingFace model for embeddings
+LLM_MODEL = "llama3-8b-8192" # More standard model name
+EMBEDDING_DIMENSION = 1024      # For 'text-embedding-004'
+
+MONGO_DB_URL = os.getenv("MONGO_DB_URL", "mongodb://localhost:27017")
 # --- Text Splitter Configuration ---
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 100
