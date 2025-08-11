@@ -3,8 +3,23 @@
 import logging
 from typing import AsyncGenerator
 
-# Placeholder for functions that would fetch real-time or user-specific data.
-# In a real app, these would query databases, external APIs, etc.
+# --- MODIFIED SECTION: Added placeholders for chat history ---
+def _fetch_short_term_history(user_id: str) -> str:
+    """Placeholder to fetch recent conversation history."""
+    logging.info(f"Fetching short-term history for user {user_id}...")
+    # In a real app, this would query a database for the last few turns.
+    # Example format:
+    # "Farmer: What's this yellowing on my leaves?
+    #  AI: It could be a nitrogen deficiency. Can you describe the pattern?"
+    return "Farmer: My rice plants have yellow spots. Should I be concerned?\nAI: Yes, this could be Brown Spot disease, common after rain. I advised applying a fungicide."
+
+def _fetch_long_term_summary(user_id: str) -> str:
+    """Placeholder to fetch a summary of long-term interactions."""
+    logging.info(f"Fetching long-term summary for user {user_id}...")
+    # In a real app, this could be a cached, pre-computed summary.
+    return "User has previously dealt with flooding in the 2024 monsoon season and has persistent issues with soil salinity."
+# --- END MODIFIED SECTION ---
+
 def _fetch_location_data(user_id: str) -> str:
     """Placeholder to fetch farmer's location."""
     logging.info(f"Fetching location for user {user_id}...")
@@ -27,7 +42,7 @@ async def invoke_crop_agent_chain(
     user_id: str = "user_123" # Example user ID
 ) -> AsyncGenerator[str, None]:
     """
-    Gathers all necessary context and invokes the Crop RAG chain to get a streamed response.
+    Gathers all necessary context, including chat history, and invokes the Crop RAG chain.
 
     Args:
         rag_chain: The initialized, runnable RAG chain for the Crop Agent.
@@ -44,22 +59,27 @@ async def invoke_crop_agent_chain(
     location = _fetch_location_data(user_id)
     crop_name = _fetch_crop_data(user_id)
     weather = _fetch_weather_data(location)
-
+    
+    # --- MODIFIED SECTION: Fetch history and add to input ---
+    short_term_history = _fetch_short_term_history(user_id)
+    long_term_summary = _fetch_long_term_summary(user_id)
+    
     # 2. Retrieve relevant documents from the vector store
-    # This context will be fed directly into the prompt.
     retrieved_docs = ensemble_retriever.invoke(query)
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
     context_str = format_docs(retrieved_docs)
 
     # 3. Construct the input object for the RAG chain
-    # This must match the variables in the updated RAG chain prompt.
+    # This must match all variables in the RAG chain prompt.
     chain_input = {
         "query": query,
         "location": location,
         "crop_name": crop_name,
         "weather": weather,
-        "context": context_str
+        "context": context_str,
+        "short_term_history": short_term_history,
+        "long_term_summary": long_term_summary
     }
 
     # 4. Stream the response from the RAG chain
