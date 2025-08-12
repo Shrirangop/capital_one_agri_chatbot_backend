@@ -9,7 +9,7 @@ import logging
 import os
 
 # Import the client and database objects from your database.py file
-from database import client, database
+from database.init_db import client, database
 
 # Configure logging
 logging.basicConfig(
@@ -19,10 +19,22 @@ logging.basicConfig(
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Document Q&A API",
-    description="API for processing PDF documents and answering questions using RAG with Google Gemini and Pinecone",
+    title="Agri Chatbot Backend",
+    description="RAG + multi-index crop/finance/tools assistant",
     version="1.0.0"
 )
+
+def _validate_config():
+    required_env = [
+        "PINECONE_API_KEY", # legacy single index (may be optional if multi provided)
+        "MONGO_DB_URL"
+    ]
+    missing = [k for k in required_env if not os.getenv(k)]
+    if missing:
+        logging.warning(f"Missing environment variables: {missing}. Service may run with degraded functionality.")
+    # Advisory for multi-index setup
+    if not os.getenv("PINECONE_INDEX_NAMES"):
+        logging.info("PINECONE_INDEX_NAMES not set; using single-index mode or defaults.")
 
 # Add CORS middleware
 app.add_middleware(
@@ -42,20 +54,24 @@ async def startup_event():
     Initialize services and verify database connection on application startup.
     """
     logging.info("🚀 Starting Document Q&A API...")
+    # Validate config first (non-fatal if missing values)
+    _validate_config()
+
+    # Attempt Mongo connection
     try:
-        # Verify MongoDB connection by pinging the admin database.
-        # This will raise an exception if the connection fails.
         await client.admin.command('ping')
         logging.info("✅ MongoDB connection successful.")
+    except Exception as e:
+        logging.error(f"❌ MongoDB connection failed: {e}")
+        # Do not raise here to allow app to start for endpoints that don't need DB.
 
-        # Initialize your other services
+    # Initialize other services (vector DBs, LLMs, etc.)
+    try:
         initialize_services_sync()
         logging.info("✅ All services initialized successfully on startup")
-
     except Exception as e:
-        logging.error(f"❌ Failed to connect to MongoDB or initialize services on startup: {str(e)}")
-        # Depending on your needs, you might want to exit the application if the DB connection fails
-        # For example: raise SystemExit(f"Failed to connect to DB: {e}")
+        logging.error(f"❌ Service initialization failed: {e}")
+        # Continue running; specific endpoints may handle missing services gracefully.
 
 @app.on_event("shutdown")
 async def shutdown_event():

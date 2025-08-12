@@ -5,22 +5,32 @@ import tempfile
 import requests
 import secrets
 import logging
-import json
-from typing import List, AsyncGenerator, Optional
+from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader  # updated per deprecation warning
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS  # updated per deprecation warning
 from fastapi.security import APIKeyHeader
 import config
 
-import time
-
 # Import your services
-from services.initialise_llm import initialize_llm_and_embeddings, create_rag_chain, astream_rag_response
-from services.initialise_vectordb import initialize_pinecone, get_vector_store, setup_knowledge_base
+
+from services.initialise_vectordb import (
+    get_vector_store,
+    initialize_pinecone_indexes,
+    build_multi_index_retriever,
+    build_faiss_multi_index_retriever,
+)
+from services.initialise_crop_llm import (
+    initialize_llm_and_embeddings_for_crop,
+    create_rag_chain_for_crop,
+    create_multi_index_rag_chain_for_crop,
+)
+from agents.crop_agent_invocation import invoke_crop_agent_chain
+from agents.finance_agent_invocation import invoke_finance_agent_chain
+from agents.tool_agent_invocation import invoke_tool_agent_chain
+from database.init_db import users_collection, chat_histories_collection
 
 # This tells FastAPI to look for a header named "Authorization"
 api_key_header_scheme = APIKeyHeader(name="Authorization", auto_error=False)
@@ -55,23 +65,212 @@ class DocumentResponse(BaseModel):
     results: List[QuestionAnswer]
     total_questions: int
 
-# Global variables for initialized services
-llm, embeddings_model, pinecone_index, vector_store, rag_chain = None, None, None, None, None
+# Core (PDF RAG) globals
+llm = None
+embeddings_model = None
+pinecone_index = None
+vector_store = None
+rag_chain = None
+
+# Crop agent globals
+crop_llm = None
+crop_embeddings = None
+crop_indexes = None
+crop_ensemble_retriever = None
+crop_chain = None
+# Finance agent globals
+finance_llm = None
+finance_embeddings = None
+finance_index = None
+finance_retriever = None
+finance_chain = None
+tools_llm = None
+tools_embeddings = None
+tools_index = None
+tools_retriever = None
+tools_chain = None
 
 def initialize_services_sync():
-    """Synchronous version of service initialization to be called on startup."""
-    global llm, embeddings_model, pinecone_index, vector_store, rag_chain
+    """Placeholder core initialization (currently using crop multi-index only)."""
+    if rag_chain is not None:
+        return  # already initialized
+    logging.info("Core RAG chain not configured; relying on crop agent endpoints only.")
+
+
+async def _init_crop_services_if_needed():
+    global crop_llm, crop_embeddings, crop_indexes, crop_ensemble_retriever, crop_chain
+    if crop_chain is not None and crop_ensemble_retriever is not None:
+        return
+    logging.info("Initializing crop agent services (test endpoint)...")
+    crop_llm, crop_embeddings = initialize_llm_and_embeddings_for_crop()
+    # Multi-index init (reuses config.PINECONE_INDEX_NAMES)
     try:
-        logging.info("Initializing services on startup...")
-        llm, embeddings_model = initialize_llm_and_embeddings()
-        pinecone_index = initialize_pinecone()
-        vector_store = get_vector_store(pinecone_index, embeddings_model)
-        setup_knowledge_base(pinecone_index, embeddings_model)
-        rag_chain = create_rag_chain(llm, vector_store)
-        logging.info("🎉 All services initialized successfully on startup!")
+        _, index_map = initialize_pinecone_indexes()
+        crop_indexes = index_map
+        # Use FAISS global re-ranking across indexes for higher quality context
+        crop_ensemble_retriever = build_faiss_multi_index_retriever(
+            index_map, crop_embeddings, per_index_k=6, final_k=4
+        )
+        crop_chain = create_multi_index_rag_chain_for_crop(crop_llm, crop_ensemble_retriever)
+        logging.info("Crop multi-index FAISS RAG chain initialized.")
     except Exception as e:
-        logging.critical(f"❌ CRITICAL: Failed to initialize services on startup: {str(e)}")
-        raise e
+        logging.warning(
+            f"Multi-index init failed; falling back to single existing vector_store: {e}"
+        )
+        if vector_store is None:
+            raise
+        crop_ensemble_retriever = vector_store.as_retriever(
+            search_type=config.RETRIEVER_SEARCH_TYPE,
+            search_kwargs=config.RETRIEVER_SEARCH_KWARGS,
+        )
+        crop_chain = create_rag_chain_for_crop(crop_llm, vector_store)
+
+async def _init_finance_services_if_needed():
+    global finance_llm, finance_embeddings, finance_index, finance_retriever, finance_chain
+    if finance_chain is not None and finance_retriever is not None:
+        return
+    from services.initialise_finances_llm import initialize_llm_and_embeddings_for_finances, create_rag_chain_for_finances
+    from services.initialise_finance_vectordb import init_finance_index, build_finance_retriever
+    logging.info("Initializing finance agent services...")
+    finance_llm, finance_embeddings = initialize_llm_and_embeddings_for_finances()
+    _, idx = init_finance_index()
+    finance_index = idx
+    finance_retriever = build_finance_retriever(finance_index, finance_embeddings)
+    # Build chain (finance chain expects general_context provided in invocation wrapper)
+    finance_chain = create_rag_chain_for_finances(finance_llm)
+    logging.info("Finance agent initialized.")
+
+async def _init_tools_services_if_needed():
+    global tools_llm, tools_embeddings, tools_index, tools_retriever, tools_chain
+    if tools_chain is not None and tools_retriever is not None:
+        return
+    from services.initialise_tool_llm import initialize_llm_and_embeddings_for_tool, create_rag_chain_for_tool
+    from services.initialise_tools_vectordb import init_tools_index, build_tools_retriever
+    logging.info("Initializing tools agent services...")
+    tools_llm, tools_embeddings = initialize_llm_and_embeddings_for_tool()
+    _, idx = init_tools_index()
+    tools_index = idx
+    tools_retriever = build_tools_retriever(tools_index, tools_embeddings)
+    tools_chain = create_rag_chain_for_tool(tools_llm)
+    logging.info("Tools agent initialized.")
+
+
+class CropTestRequest(BaseModel):
+    question: str
+    user_id: int | None = None
+    # Optional overrides for dummy data
+    location: str | None = None  # could be pincode
+    crop_name: str | None = None
+    irrigation_type: str | None = None
+
+
+@router.post("/test/crop")
+async def test_crop_agent(req: CropTestRequest):
+
+   
+    """Test the crop agent with dummy user/profile data and return full response.
+
+    Steps:
+    - Ensure crop agent services initialized
+    - Upsert a dummy user + chat history (if absent)
+    - Invoke crop RAG chain with provided question
+    - Aggregate streamed chunks into a single answer string
+    """
+    await _init_crop_services_if_needed()
+
+    print("Here")
+
+    uid = req.user_id or 1234567890
+    dummy_user = {
+        "phone_number": uid,
+    # For testing force location to 'Nagpur' (ignore provided pincode / location)
+    "location": "Nagpur",
+        "curr_crop_name": req.crop_name or "rice",
+        "irrigation_type": req.irrigation_type or "drip",
+    }
+    # Upsert user
+    await users_collection.update_one(
+        {"phone_number": uid},
+        {"$setOnInsert": dummy_user},
+        upsert=True
+    )
+
+    # Ensure minimal chat history doc (empty embeddings etc.)
+    await chat_histories_collection.update_one(
+        {"user_id": uid},
+        {"$setOnInsert": {
+            "user_id": uid,
+            "q_embeddings": [],
+            "ans_embeddings": [],
+            "last_two_qs": [],
+            "last_two_ans": []
+        }},
+        upsert=True
+    )
+
+    # Run the crop agent invocation (collect streaming output)
+    chunks = []
+    async for part in invoke_crop_agent_chain(
+        crop_chain,
+        crop_ensemble_retriever,
+        crop_embeddings,
+        req.question,
+        phone_number=uid
+    ):
+        chunks.append(str(part))
+
+    return {"user_id": uid, "answer": "".join(chunks)}
+
+class FinanceTestRequest(BaseModel):
+    question: str
+    user_id: int | None = None
+    location: str | None = None
+    crop_name: str | None = None
+
+@router.post("/test/finance")
+async def test_finance_agent(req: FinanceTestRequest):
+    await _init_finance_services_if_needed()
+    uid = req.user_id or 1122334455
+    # Upsert minimal user record for contextual fields
+    await users_collection.update_one(
+        {"phone_number": uid},
+        {"$set": {"phone_number": uid, "location": req.location or "Nagpur", "curr_crop_name": req.crop_name or "rice"}},
+        upsert=True
+    )
+    chunks = []
+    async for part in invoke_finance_agent_chain(
+        finance_chain,
+        finance_retriever,
+        req.question,
+        phone_number=uid
+    ):
+        chunks.append(str(part))
+    return {"user_id": uid, "answer": "".join(chunks)}
+
+class ToolsTestRequest(BaseModel):
+    question: str
+    user_id: int | None = None
+    location: str | None = None
+    crop_name: str | None = None
+
+@router.post("/test/tools")
+async def test_tools_agent(req: ToolsTestRequest):
+    await _init_tools_services_if_needed()
+    uid = req.user_id or 6677889900
+    await users_collection.update_one(
+        {"phone_number": uid},
+        {"$set": {"phone_number": uid, "location": req.location or "Nagpur", "curr_crop_name": req.crop_name or "rice"}},
+        upsert=True
+    )
+    chunks = []
+    async for part in invoke_tool_agent_chain(
+        tools_chain,
+        tools_retriever,
+        req.question,
+        phone_number=uid
+    ):
+        chunks.append(str(part))
+    return {"user_id": uid, "answer": "".join(chunks)}
 
 
 
@@ -143,9 +342,7 @@ async def process_document_and_get_answers(request: DocumentRequest) -> dict:
     return final_result
 # --- How to Use It in Your Endpoint ---
 
-router = APIRouter()
-
-@router.post("/hackrx/run")
+@router.post("/rag/document")
 async def process_document_sync(request: DocumentRequest, api_key: str = Depends(get_api_key)):
     """
     Processes a PDF and returns a single JSON object with all answers.
@@ -163,74 +360,13 @@ async def process_document_sync(request: DocumentRequest, api_key: str = Depends
     # FastAPI will automatically convert the dictionary to a JSON response
     return result_dict
 
-@router.post("/hackrx/run-old", response_model=DocumentResponse)
-async def process_document(request: DocumentRequest, api_key: str = Depends(get_api_key)):
-    """Processes a PDF document and answers questions using RAG (Blocking)."""
-    if rag_chain is None:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Services are not initialized.")
-    
-    pdf_filename = None
-    results = []
-    try:
-        if not request.questions:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Questions list cannot be empty")
-        
-        logging.info(f"Downloading PDF from: {request.documents}")
-        pdf_response = requests.get(str(request.documents), timeout=30)
-        pdf_response.raise_for_status()
-        
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            tmp_file.write(pdf_response.content)
-            pdf_filename = tmp_file.name
-        
-        logging.info(f"Processing PDF: {pdf_filename}...")
-        query_loader = PyPDFLoader(pdf_filename)
-        query_docs = query_loader.load()
-        if not query_docs:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not extract content from PDF")
-        
-        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-        query_chunks = splitter.split_documents(query_docs)
-        if not query_chunks:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not create chunks from PDF")
-        
-        faiss_vector_store = FAISS.from_documents(query_chunks, embeddings_model)
-        query_doc_retriever = faiss_vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 3, 'fetch_k': 5, "lambda_mult": 0.8})
-        
-        logging.info("✅ Document processed. Now answering questions...")
-        
-        for question in request.questions:
-            logging.info(f"🔎 Processing question: {question}")
-            try:
-                answer = rag_chain.invoke({"question": question, "query_doc_retriever": query_doc_retriever})
-                print(f"Answer for '{question}': {answer}")
-                results.append(QuestionAnswer(question=question, answer=str(answer)))
-                logging.info(f"✅ Answer generated for: {question}")
-            except Exception as e:
-                logging.error(f"❌ Error processing question '{question}': {str(e)}")
-                results.append(QuestionAnswer(question=question, answer=f"Error processing question: {str(e)}"))
-        
-        return DocumentResponse(
-            status="success",
-            message=f"Successfully processed {len(results)} questions",
-            results=results,
-            total_questions=len(request.questions)
-        )
-    except requests.RequestException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error downloading PDF: {str(e)}")
-    except Exception as e:
-        logging.error(f"❌ Error in process_document: {str(e)}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
-    finally:
-        if pdf_filename and os.path.exists(pdf_filename):
-            try:
-                os.remove(pdf_filename)
-                logging.info(f"✅ Cleaned up temporary file: {pdf_filename}")
-            except Exception as e:
-                logging.error(f"⚠️ Could not remove temporary file {pdf_filename}: {str(e)}")
+    # Removed legacy blocking endpoint in cleanup.
 
 @router.get("/status")
 async def get_status():
-    """Check if the document processing service is ready."""
-    # ... (Your status code remains the same) ...
-    pass
+    return {
+        "core_initialized": rag_chain is not None,
+        "crop_initialized": crop_chain is not None,
+        "indexes_loaded": bool(pinecone_index),
+        "multi_index": crop_ensemble_retriever is not None
+    }

@@ -46,24 +46,8 @@ def initialize_llm_and_embeddings_for_finances():
         raise
 
 # UNCHANGED: This function's logic is provider-agnostic.
-def create_rag_chain_for_finances(llm, vector_store):
-    """
-    Creates the complete RAG chain. The same chain can be used for invoke() and stream().
-    
-    Args:
-        llm: The initialized language model.
-        vector_store: The primary vector store (e.g., Pinecone).
-    
-    Returns:
-        A runnable LangChain object.
-    """
-    logging.info("Creating RAG chain...")
-
-    general_retriever = vector_store.as_retriever(
-        search_type=config.RETRIEVER_SEARCH_TYPE,
-        search_kwargs=config.RETRIEVER_SEARCH_KWARGS
-    )
-
+def create_rag_chain_for_finances(llm):
+    """Finance RAG chain using original JSON-output style template (unchanged intent)."""
     template = """You are a specialized Agricultural Support AI that connects on-field crop situations with relevant financial support schemes. Your task is to analyze the farmer's situation and provide detailed information about a suitable financial product or government scheme.
 
 INSTRUCTIONS:
@@ -85,8 +69,8 @@ INSTRUCTIONS:
 - **Location**: {location}
 - **Crop Name**: {crop_name}
 - **Relevant Weather**: {weather}
-- **Details of Immediate Issues**: {short_term_answers}
-- **Details of Future Planning Needs**: {long_term_a}
+- **Details of Immediate Issues**: {short_term_history}
+- **Details of Future Planning Needs**: {long_term_summary}
 
 ---
 
@@ -107,25 +91,22 @@ INSTRUCTIONS:
 
 JSON_OUTPUT:
 """
-    
     prompt = PromptTemplate.from_template(template)
-
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
-
-    rag_chain = (
+    chain = (
         {
-            "prioritized_context": lambda x: format_docs(x['query_doc_retriever'].get_relevant_documents(x['question'])),
-            "general_context": itemgetter("question") | general_retriever | format_docs,
-            "question": itemgetter("question")
+            "general_context": itemgetter("general_context"),
+            "query": itemgetter("query"),
+            "location": itemgetter("location"),
+            "crop_name": itemgetter("crop_name"),
+            "weather": itemgetter("weather"),
+            "short_term_history": itemgetter("short_term_history"),
+            "long_term_summary": itemgetter("long_term_summary"),
         }
         | prompt
         | llm
         | StrOutputParser()
     )
-
-    logging.info("Hybrid Q&A chain is ready.")
-    return rag_chain
+    return chain
 
 # UNCHANGED: This function's logic is provider-agnostic.
 async def astream_rag_response_for_finances(rag_chain, question: str, query_doc_retriever) -> AsyncGenerator[str, None]:

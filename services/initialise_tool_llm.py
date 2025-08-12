@@ -46,7 +46,7 @@ def initialize_llm_and_embeddings_for_tool():
         raise
 
 # UNCHANGED: This function's logic is provider-agnostic.
-def create_rag_chain_for_tool(llm, vector_store):
+def create_rag_chain_for_tool(llm):
     """
     Creates the complete RAG chain. The same chain can be used for invoke() and stream().
     
@@ -57,12 +57,7 @@ def create_rag_chain_for_tool(llm, vector_store):
     Returns:
         A runnable LangChain object.
     """
-    logging.info("Creating RAG chain...")
-
-    general_retriever = vector_store.as_retriever(
-        search_type=config.RETRIEVER_SEARCH_TYPE,
-        search_kwargs=config.RETRIEVER_SEARCH_KWARGS
-    )
+    logging.info("Creating tools RAG chain (external retriever supplies general_context)...")
 
     template = """You are an expert Agri-Tech Specialist AI. Your function is to analyze a farmer's on-field situation and recommend a list of specific agricultural tools, technologies, and equipment, including their purpose and estimated prices.
 
@@ -104,11 +99,17 @@ JSON_TOOL_RECOMMENDATIONS:
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
+    # Chain expects caller to provide: query, general_context, location, crop_name, weather,
+    # short_term_answers, long_term_a
     rag_chain = (
         {
-            "prioritized_context": lambda x: format_docs(x['query_doc_retriever'].get_relevant_documents(x['question'])),
-            "general_context": itemgetter("question") | general_retriever | format_docs,
-            "question": itemgetter("question")
+            "query": itemgetter("query"),
+            "general_context": itemgetter("general_context"),
+            "location": itemgetter("location"),
+            "crop_name": itemgetter("crop_name"),
+            "weather": itemgetter("weather"),
+            "short_term_answers": itemgetter("short_term_answers"),
+            "long_term_a": itemgetter("long_term_a"),
         }
         | prompt
         | llm

@@ -4,12 +4,33 @@ import logging
 from typing import AsyncGenerator
 from services.brain_agent_chain import create_brain_agent_chain
 from agents.crop_agent_invocation import invoke_crop_agent_chain
+from database.init_db import chat_histories_collection
+import config
+
+def build_onboarding_form_message(user_id: str) -> str:
+    """Return a structured message containing a link to the onboarding form.
+
+    The front-end can detect this pattern (e.g., `FORM_LINK:`) and render a UI form.
+    The form should collect: location (pincode/district), crop type, irrigation type, browser (auto-captured).
+    """
+    form_url = f"{config.USER_FORM_URL}?user_id={user_id}"
+    instructions = (
+        "Please complete the initial farm profile so I can tailor advice. "
+        "Provide location (pincode), current crop, and irrigation type."
+    )
+    return (
+        "ONBOARDING_REQUIRED\n" +
+        f"FORM_LINK: {form_url}\n" +
+        "FIELDS: location, crop_type, irrigation_type\n" +
+        f"MESSAGE: {instructions}"
+    )
 
 async def route_query(
     query: str,
     brain_llm,
     crop_rag_chain,
-    ensemble_retriever
+    ensemble_retriever,
+    user_id: str = "user_123"
 ) -> AsyncGenerator[str, None]:
     """
     First, uses the brain agent to classify the query, then routes to the
@@ -26,6 +47,11 @@ async def route_query(
     """
     logging.info("Routing query with Brain Agent...")
     brain_chain = create_brain_agent_chain(brain_llm)
+
+    # First interaction check: if no chat history document, prompt onboarding form
+    if not chat_histories_collection.find_one({"user_id": user_id}):
+        yield build_onboarding_form_message(user_id)
+        return
     
     # Get the classification from the brain agent
     routing_decision = await brain_chain.ainvoke({"query": query})
@@ -39,6 +65,7 @@ async def route_query(
         logging.info("Query routed to Crop Agent. Invoking...")
         async for chunk in invoke_crop_agent_chain(crop_rag_chain, ensemble_retriever, query):
             yield chunk
+        return
 
     elif "general_agent" in routing_decision:
         # Handle general queries here.

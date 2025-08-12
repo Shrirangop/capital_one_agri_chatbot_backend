@@ -21,6 +21,15 @@ CAPITAL_CSV_DIRECTORY = os.getenv("CAPITAL_CSV_DIRECTORY", r"E:\\Capital One\\ch
 
 # Directory containing PDF and other unstructured documents for rag-chatbot-index
 PDF_DIRECTORY = os.getenv("PDF_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\pdf")
+FINANCE_DIRECTORY = os.getenv("FINANCE_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\Finances")
+TOOLS_DIRECTORY = os.getenv("TOOLS_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\Tools")
+
+# Optional dedicated index names for finance & tools (else include in PINECONE_INDEX_NAMES)
+FINANCE_INDEX_NAME = os.getenv("FINANCE_INDEX_NAME", "capital-finance-index")
+TOOLS_INDEX_NAME = os.getenv("TOOLS_INDEX_NAME", "capital-tools-index")
+
+# Web form base URL for first-time user data capture
+USER_FORM_URL = os.getenv("USER_FORM_URL", "https://your-frontend.example.com/farmer-onboarding")
 
 
 
@@ -48,5 +57,7 @@ CHUNK_OVERLAP = 100
 # --- Retriever Configuration ---
 RETRIEVER_SEARCH_TYPE = "mmr" 
 RETRIEVER_SEARCH_KWARGS = {"k": 4,"fetch_k": 6, "lambda_mult": 0.8 }
+
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "youe_api_key_here")
 
 logging.info("Configuration loaded successfully.")

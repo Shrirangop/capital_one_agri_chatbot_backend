@@ -57,7 +57,7 @@ INSTRUCTIONS:
 4.  If the retrieved data within the context is empty or clearly insufficient, use your general knowledge, but you MUST start with: "Based on general agricultural knowledge:"
 5.  Integrate the location, crop, and weather details to make the answer personalized and relevant.
 6.  Address all parts of the farmer's query.
-
+7.  If some information is not available, Use general information.
 ---
 
 ## CONTEXT
@@ -107,3 +107,49 @@ ANSWER:"""
 
     logging.info("Updated RAG chain with history is ready.")
     return rag_chain
+
+def create_multi_index_rag_chain_for_crop(llm, retriever):
+    """Multi-index variant expecting key 'general_context' produced upstream.
+
+    Args:
+        llm: Chat model
+        retriever: Any retriever implementing invoke(query)->docs (already ensemble)
+    Returns:
+        Runnable chain
+    """
+    template = """You are an expert Agricultural AI Assistant. Use the GENERAL CONTEXT plus history.
+
+Location: {location}
+Crop: {crop_name}
+Weather: {weather}
+
+GENERAL CONTEXT:
+{general_context}
+
+SHORT-TERM HISTORY:
+{short_term_history}
+
+LONG-TERM SUMMARY:
+{long_term_summary}
+
+FARMER QUERY:
+{query}
+
+Answer (concise, <120 words, actionable, no repetition):"""
+    prompt = PromptTemplate.from_template(template)
+
+    chain = (
+        {
+            "general_context": itemgetter("general_context"),
+            "query": itemgetter("query"),
+            "location": itemgetter("location"),
+            "crop_name": itemgetter("crop_name"),
+            "weather": itemgetter("weather"),
+            "short_term_history": itemgetter("short_term_history"),
+            "long_term_summary": itemgetter("long_term_summary"),
+        }
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain

@@ -2,48 +2,45 @@
 
 import logging
 from typing import AsyncGenerator
+from database.init_db import users_collection
 
-# NOTE: In a real app, you would create a dedicated RAG chain for finance
-# in 'services/initialise_llm.py'. For simplicity, we can reuse the generic one.
-# from services.initialise_llm import create_generic_rag_chain
+async def _fetch_user_data(phone_number: int) -> dict:
+    user = await users_collection.find_one({"phone_number": phone_number})
+    if not user:
+        return {"phone_number": phone_number, "location": "", "curr_crop_name": ""}
+    return {
+        "phone_number": user.get("phone_number", ""),
+        "location": user.get("location", ""),
+        "curr_crop_name": user.get("curr_crop_name", ""),
+    }
 
 async def invoke_finance_agent_chain(
     rag_chain,
-    retriever, # This will be the finance-specific retriever
+    retriever,
     query: str,
+    phone_number: int
 ) -> AsyncGenerator[str, None]:
-    """
-    Gathers context and invokes the Finance RAG chain.
-
-    Args:
-        rag_chain: The initialized, runnable RAG chain.
-        retriever: The retriever for the finance knowledge base.
-        query (str): The user's question.
-
-    Yields:
-        str: Chunks of the response.
-    """
+    """Invoke finance RAG chain using finance index retriever only."""
     logging.info(f"Finance Agent invoked for query: '{query}'")
+    user_data = await _fetch_user_data(phone_number)
+    location = user_data.get("location", "") or "N/A"
+    crop_name = user_data.get("curr_crop_name", "") or "N/A"
 
-    # 1. Retrieve relevant documents from the finance vector store
-    retrieved_docs = retriever.invoke(query)
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
-    context_str = format_docs(retrieved_docs)
+    docs = retriever.invoke(query)
+    context = "\n\n".join(d.page_content for d in docs)
 
-    # 2. Construct the input for the RAG chain.
-    # Note: We omit location/weather as they might be irrelevant for finance.
     chain_input = {
         "query": query,
-        "context": context_str,
-        # Provide default/empty values for unused keys in the generic prompt
-        "location": "N/A",
-        "crop_name": "N/A",
+        "general_context": context,
+        "location": location,
+        "crop_name": crop_name,
         "weather": "N/A",
+        "short_term_history": "",
+        "long_term_summary": ""
     }
-
-    # 3. Stream the response from the RAG chain
-    async for chunk in rag_chain.astream(chain_input):
-        yield chunk
-
-    logging.info("Finance Agent streaming finished.")
+    try:
+        async for chunk in rag_chain.astream(chain_input):
+            yield chunk
+    except Exception as e:
+        logging.error(f"Finance RAG chain streaming failed: {e}")
+        yield f"Error: {e}"

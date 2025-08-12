@@ -3,7 +3,7 @@
 import os
 import logging
 from glob import glob
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader  # updated per deprecation warning
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import config
 
