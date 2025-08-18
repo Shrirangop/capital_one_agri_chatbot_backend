@@ -214,7 +214,7 @@ async def invoke_crop_agent_chain(
     # location = _resolve_user_location(location_raw)
     # logging.debug(f"Resolved user location raw='{location_raw}' -> '{location}'")
 
-    location = 'Kanpur'
+    location = user_data['location']
     crop_name = user_data['curr_crop_name']
     weather = await _fetch_weather_data(location)
 
@@ -240,15 +240,21 @@ async def invoke_crop_agent_chain(
         stored_q_embs = chat_history.get("q_embeddings", []) or []
         stored_a_embs = chat_history.get("ans_embeddings", []) or []
         top_k = 3  # limit to top 3
-        if stored_q_embs and hasattr(embeddings_model, 'embed_query'):
-            # Build query embedding
+
+        # Extract only the embedding vectors for FAISS/numpy
+        q_vectors = [q.get("embed", []) for q in stored_q_embs]
+        a_vectors = [a.get("embed", []) for a in stored_a_embs]
+        a_texts = [a.get("answer", "") for a in stored_a_embs]
+
+        if q_vectors and hasattr(embeddings_model, 'embed_query'):
             query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32)
-            q_matrix = np.array(stored_q_embs, dtype=np.float32)
-            # Normalize (safety) for inner product similarity
+            q_matrix = np.array(q_vectors, dtype=np.float32)
+
             def _normalize(mat):
                 norms = np.linalg.norm(mat, axis=1, keepdims=True)
                 norms[norms == 0] = 1.0
                 return mat / norms
+
             query_emb = _normalize(query_emb.reshape(1, -1))[0]
             q_matrix = _normalize(q_matrix)
             if _FAISS_AVAILABLE and q_matrix.shape[0] >= 1:
@@ -256,69 +262,34 @@ async def invoke_crop_agent_chain(
                 index.add(q_matrix)
                 sims, idxs = index.search(query_emb.reshape(1, -1), min(top_k, q_matrix.shape[0]))
                 for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
-                    entry = {
+                    long_term_summary.append({
                         "rank": pos + 1,
                         "q_index": int(idx),
                         "similarity": float(sim),
-                        "q_embedding": stored_q_embs[idx],
-                        "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
-                    }
-                    long_term_summary.append(entry)
-                # Combined (averaged) embedding of top 3
-                if long_term_summary:
-                    try:
-                        top_q_matrix = np.array([e["q_embedding"] for e in long_term_summary], dtype=np.float32)
-                        combined_q = top_q_matrix.mean(axis=0).tolist()
-                        top_a_embs = [e["ans_embedding"] for e in long_term_summary if e.get("ans_embedding") is not None]
-                        combined_a = None
-                        if top_a_embs:
-                            combined_a = np.array(top_a_embs, dtype=np.float32).mean(axis=0).tolist()
-                        long_term_summary.append({
-                            "combined": True,
-                            "count": len(long_term_summary),
-                            "q_indices": [e["q_index"] for e in long_term_summary if not e.get("combined")],
-                            "q_embedding": combined_q,
-                            "ans_embedding": combined_a
-                        })
-                    except Exception as _ce:
-                        logging.warning(f"Failed to compute combined top-3 embedding: {_ce}")
+                        "question": stored_q_embs[idx].get("question", ""),
+                        "answer": a_texts[idx] if idx < len(a_texts) else ""
+                    })
             else:
-                # Fallback manual scoring
-                sims = []
-                for idx, vec in enumerate(q_matrix):
-                    sims.append((idx, float(np.dot(query_emb, vec))))
+                sims = [(idx, float(np.dot(query_emb, vec))) for idx, vec in enumerate(q_matrix)]
                 selected = sorted(sims, key=lambda x: x[1], reverse=True)[:top_k]
                 for pos, (idx, sim) in enumerate(selected):
-                    entry = {
+                    long_term_summary.append({
                         "rank": pos + 1,
                         "q_index": int(idx),
                         "similarity": float(sim),
-                        "q_embedding": stored_q_embs[idx],
-                        "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
-                    }
-                    long_term_summary.append(entry)
-                if long_term_summary:
-                    try:
-                        top_q_matrix = np.array([e["q_embedding"] for e in long_term_summary], dtype=np.float32)
-                        combined_q = top_q_matrix.mean(axis=0).tolist()
-                        top_a_embs = [e["ans_embedding"] for e in long_term_summary if e.get("ans_embedding") is not None]
-                        combined_a = None
-                        if top_a_embs:
-                            combined_a = np.array(top_a_embs, dtype=np.float32).mean(axis=0).tolist()
-                        long_term_summary.append({
-                            "combined": True,
-                            "count": len(long_term_summary),
-                            "q_indices": [e["q_index"] for e in long_term_summary if not e.get("combined")],
-                            "q_embedding": combined_q,
-                            "ans_embedding": combined_a
-                        })
-                    except Exception as _ce:
-                        logging.warning(f"Failed to compute combined top-3 embedding (fallback): {_ce}")
+                        "question": stored_q_embs[idx].get("question", ""),
+                        "answer": a_texts[idx] if idx < len(a_texts) else ""
+                    })
     except Exception as e:
         logging.error(f"Failed to compute long_term_summary (FAISS stage): {e}")
 
-    # Represent long_term_summary as JSON string (LLM-safe) if list not empty
-    long_term_summary_str = _json.dumps(long_term_summary) if long_term_summary else ""
+    # Represent long_term_summary as a readable string for the LLM
+    if long_term_summary:
+        long_term_summary_str = "\n---\n".join(
+            f"Q: {e['question']}\nA: {e['answer']}" for e in long_term_summary if e.get("answer")
+        )
+    else:
+        long_term_summary_str = ""
 
 
     

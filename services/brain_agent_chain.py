@@ -62,7 +62,7 @@ def create_brain_agent_chain(llm):
 3.  **`tool_agent`**: For queries specifically about **farming tools, machinery, and equipment**. This includes selection, maintenance, and operation of tools.
     * *Examples*: "Which power tiller is best for a 2-acre farm?", "How do I maintain my sprayer?", "Compare rotavators and cultivators."
 
-4.  **`disease_agent`**: For queries about **plant diseases, infections, symptoms, or requests for disease diagnosis**. This includes questions about leaf spots, blight, rot, and requests to analyze crop images for disease.
+4.  **`disease_agent`**: For queries about **plant diseases, infections, symptoms, or requests for disease diagnosis** or it includes a photo. This includes questions about leaf spots, blight, rot, and requests to analyze crop images for disease.
     * *Examples*: "My brinjal leaves have brown patches, what is it?", "Diagnose the disease from this image.", "What causes powdery mildew in cucurbits?"
 
 5.  **`general_agent`**: For any query that does not fit into the other four categories.

@@ -180,8 +180,7 @@ async def invoke_tool_agent_chain(
         "location": location,
         "crop_name": crop_name,
         "weather": weather,
-        "short_term_history": short_term_history,
-        "long_term_summary": long_term_summary_str
+        "long_term_a": long_term_summary_str
     }
 
     # 6. Stream the response

@@ -52,10 +52,11 @@ def create_rag_chain_for_finances(llm):
 
 INSTRUCTIONS:
 1.  Carefully analyze the `FARMER'S QUERY` and the on-field situation described in the `AVAILABLE CONTEXT` block.
-2.  Use the details from the query and context (e.g., `location`, `crop_name`, `weather`, and issue descriptions) as keywords to identify the single most relevant financial scheme or product from your knowledge base.
-3.  Your primary goal is to generate the information required to fill out the fields in the `DESIRED OUTPUT FORMAT`.
-4.  If no specific scheme directly matches the context (e.g., a scheme for "pest attack"), find the next best alternative, like a general crop insurance or credit scheme, and state that it is a general recommendation.
-5.  Populate the output fields with accurate, clear, and concise information.
+2.  If there is some information  available in both `FARMER'S QUERY` and `AVAILABLE CONTEXT`, use `FARMER'S QUERY` for response.
+3.  Use the details from the query and context (e.g., `location`, `crop_name`, `weather`, and issue descriptions) as keywords to identify the single most relevant financial scheme or product from your knowledge base.
+4.  Your primary goal is to generate the information required to fill out the fields in the `DESIRED OUTPUT FORMAT`.
+5.  If no specific scheme directly matches the context (e.g., a scheme for "pest attack"), find the next best alternative, like a general crop insurance or credit scheme, and state that it is a general recommendation.
+6.  Populate the output fields with accurate, clear, and concise information.
 
 ---
 

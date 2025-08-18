@@ -4,6 +4,9 @@ from typing import AsyncGenerator
 from services.brain_agent_chain import create_brain_agent_chain
 from database.init_db import chat_histories_collection, users_collection
 import config
+from fastapi import UploadFile
+from typing import Union
+
 
 # We no longer need to import the component variables directly
 from services.call_different_agents import (
@@ -37,7 +40,7 @@ async def route_query(
     query: str,
     brain_llm,
     user_id: int,
-    image_file: bytes = None
+    image_file: Union[str, UploadFile, None] = None
 ) -> AsyncGenerator[str, None]:
     """
     Routes the query to the correct agent based on brain agent classification.
@@ -48,9 +51,17 @@ async def route_query(
     if not await users_collection.find_one({"phone_number": user_id}):
         yield build_onboarding_form_message(str(user_id))
         return
+    
 
+    
     routing_decision = await brain_chain.ainvoke({"query": query})
     routing_decision = routing_decision.strip().lower()
+
+    if image_file:
+        logging.info("Image file provided, routing to Disease Agent.")
+        routing_decision = "disease_agent"
+
+
     logging.info(f"Brain Agent decision: {routing_decision}")
 
     if "crop_agent" in routing_decision:

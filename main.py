@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import runllm_router
 from routers.runllm_router import initialize_services_sync
+from routers import whatsapp_router
 import uvicorn
 import logging
 import os
@@ -47,6 +48,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(runllm_router.router, prefix="/api/v1", tags=["documents"])
+app.include_router(whatsapp_router.router, prefix="/api/v1", tags=["whatsapp"])
 
 @app.on_event("startup")
 async def startup_event():

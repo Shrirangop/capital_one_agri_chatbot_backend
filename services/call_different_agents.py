@@ -273,6 +273,7 @@ async def test_finance_agent(req: FinanceTestRequest):
     async for part in invoke_finance_agent_chain(
         finance_chain,
         finance_retriever,
+        finance_embeddings,
         req.question,
         phone_number=uid
     ):
@@ -329,6 +330,7 @@ async def test_tools_agent(req: ToolsTestRequest):
     async for part in invoke_tool_agent_chain(
         tools_chain,
         tools_retriever,
+        tools_embeddings,
         req.question,
         phone_number=uid
     ):

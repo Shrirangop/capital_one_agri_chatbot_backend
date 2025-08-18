@@ -1,4 +1,3 @@
-
 import logging
 from typing import AsyncGenerator,Union, IO
 import math  # may be unused; retained if future numeric ops needed
@@ -6,96 +5,92 @@ import json as _json
 from database.init_db import users_collection, chat_histories_collection
 
 
+from fastapi import UploadFile
 import requests
 import json
 import config
 import numpy as np
+import aiohttp
 
-import requests
 
+import httpx
+from typing import Union, IO
 
-# Add this to your config.py or constants file
-DISEASE_API_URL = "http://127.0.0.1:8000/predict/" # Or your actual deployed API URL
+# You'll need to install httpx:
+# pip install httpx
 
-async def _fetch_disease(crop_name: str, image_file: Union[bytes, IO[bytes]], lang: str = "en") -> str:
+# Assume DISEASE_API_URL is defined elsewhere, e.g.:
+DISEASE_API_URL = "http://127.0.0.1:8000/predict/"
+
+async def _fetch_disease(crop_name: str, image_file: Union[str, UploadFile], lang: str = "en") -> str:
     """
-    Predicts crop disease by sending an image to the disease detection API.
-
-    This function constructs a multipart/form-data request to the /predict/
-    endpoint, sends it, and parses the response to return the predicted
-    disease class.
-
-    Args:
-        crop_name: The type of crop (e.g., "tomato", "potato").
-        image_file: The image file as bytes or a file-like object.
-        lang: The language for the response (default: "en").
-
-    Returns:
-        A string containing the predicted disease name (e.g., "Tomato_Late_blight")
-        or a descriptive error message if the request fails.
+    Predicts crop disease by sending an image to the disease detection API asynchronously.
     """
     logging.info(f"Predicting disease for {crop_name}...")
 
-    # --- API Request ---
-    # The 'data' dictionary holds the form fields like 'crop_type' and 'lang'.
     payload = {
         "crop_type": crop_name,
         "lang": lang
     }
 
-
-    files_payload = {
-        "image": ("image.jpg", image_file, "image/jpeg")
+    files = {
+    "image": ("image.jpeg", image_file, "image/jpeg")
     }
 
-    try:
-        # --- Execute the Request and Handle Response ---
-        # Use requests.post for a POST request and pass form data and files separately.
-        response = requests.post(DISEASE_API_URL, data=payload, files=files_payload)
-        
-        # This will raise an exception for HTTP error codes (4xx or 5xx)
-        response.raise_for_status()
+    
 
-        # Parse the JSON response from the API
-        data = response.json()
 
-        # Check for application-level errors returned by the API in its JSON response
-        if "error" in data:
-            error_msg = f"API returned an error for {crop_name}: {data['error']}"
+    
+    
+
+    # Use an asynchronous client with a context manager
+    async with httpx.AsyncClient() as client:
+        try:
+            # --- Execute the Request and Handle Response ---
+            # Use 'await' for the asynchronous network call
+            response = await client.post(DISEASE_API_URL, data=payload, files=files)
+            
+            # This will raise an exception for HTTP error codes (4xx or 5xx)
+            response.raise_for_status()
+
+            # Parse the JSON response from the API
+            data = response.json()
+
+            # --- Process Response ---
+            if "error" in data:
+                error_msg = f"API returned an error for {crop_name}: {data['error']}"
+                logging.error(error_msg)
+                return error_msg
+
+            predicted_class = data.get("class")
+            if not predicted_class:
+                error_msg = f"API response for {crop_name} is missing the 'class' key."
+                logging.error(error_msg)
+                return error_msg
+
+            logging.info(f"Successfully predicted disease for {crop_name}: {predicted_class}")
+            return predicted_class
+
+        # --- Error Handling ---
+        # Updated to use httpx's specific exceptions
+        except httpx.HTTPStatusError as http_err:
+            error_msg = f"An HTTP error occurred for {crop_name}: {http_err}. Response: {http_err.response.text}"
+            logging.error(error_msg)
+            return error_msg
+        except httpx.RequestError as req_err:
+            error_msg = f"A network error occurred for {crop_name}: {req_err}"
+            logging.error(error_msg)
+            return error_msg
+        except Exception as e:
+            logging.exception(f"An unexpected error occurred for {crop_name}: {e}")
+            error_msg = f"An unexpected error occurred for {crop_name}: {e}"
             logging.error(error_msg)
             return error_msg
 
-        predicted_class = data.get("class")
-        if not predicted_class:
-            error_msg = f"API response for {crop_name} is missing the 'class' key."
-            logging.error(error_msg)
-            return error_msg
-
-        logging.info(f"Successfully predicted disease for {crop_name}: {predicted_class}")
-        return predicted_class
-
-    # --- Error Handling ---
-    except requests.exceptions.HTTPError as http_err:
-        # Handle specific HTTP errors
-        error_msg = f"An HTTP error occurred while predicting disease for {crop_name}: {http_err}. Response: {http_err.response.text}"
-        logging.error(error_msg)
-        return error_msg
-    except requests.exceptions.RequestException as req_err:
-        # Handle network-related errors (e.g., connection refused)
-        error_msg = f"A network error occurred while predicting disease for {crop_name}: {req_err}"
-        logging.error(error_msg)
-        return error_msg
-    except Exception as e:
-        # Catch any other unexpected errors
-        error_msg = f"An unexpected error occurred during disease prediction for {crop_name}: {e}"
-        logging.error(error_msg)
-        return error_msg
 
 
 
 
-
-from typing import Union, IO # Make sure to import these types
 
 async def invoke_disease_agent_chain(
     rag_chain,
@@ -103,14 +98,18 @@ async def invoke_disease_agent_chain(
     embeddings_model, 
     crop_name: str,
     phone_number: int,
-    image_file: Union[bytes, IO[bytes]] # <-- Add image_file parameter
+    image_file: Union[str, UploadFile, None] = None # <-- Add image_file parameter
 ) -> AsyncGenerator[str, None]:
     
     logging.info(f"Disease Agent invoked for crop: {crop_name}")
     
     # 1. Fetch disease data by calling the API
     # You might want to get the language from the user's profile
-    disease = await _fetch_disease(crop_name, image_file, lang="en")
+    # disease = await _fetch_disease(crop_name, image_file, lang="en")
+
+    disease = "GROUNDNUT LEAF SPOT (EARLY AND LATE)"
+
+    
 
     # If the API call returned an error message, yield it and stop.
     if "error" in disease.lower() or "occurred" in disease.lower():
@@ -118,6 +117,8 @@ async def invoke_disease_agent_chain(
         return
 
     # 2. Retrieve relevant documents from the vector store based on the predicted disease
+
+    crop_name = 'groundnut'
 
     query = f"{disease} for {crop_name}"
 
@@ -153,3 +154,26 @@ async def invoke_disease_agent_chain(
         yield f"Error: {e}"
 
     logging.info("Disease Agent streaming finished.")
+
+# async def invoke_disease_agent_chain(
+#     disease_rag_chain, disease_retriever, disease_embeddings,
+#     crop_name: str, user_id: int, image_file: bytes
+# ):
+#     """
+#     Calls the disease detection API with crop_name and image, yields the result.
+#     """
+#     DISEASE_API_URL = getattr(config, "DISEASE_API_URL", "http://127.0.0.1:8000/predict/")
+#     lang = "en"  # or get from user profile
+
+#     data = aiohttp.FormData()
+#     data.add_field('crop_type', crop_name)
+#     data.add_field('lang', lang)
+#     data.add_field('image', image_file, filename="crop.jpg", content_type="image/jpeg")
+
+#     async with aiohttp.ClientSession() as session:
+#         async with session.post(DISEASE_API_URL, data=data) as resp:
+#             if resp.status == 200:
+#                 result = await resp.json()
+#                 yield f"Disease prediction: {result.get('class', 'Unknown')} (confidence: {result.get('confidence', 0):.2f})"
+#             else:
+#                 yield f"Failed to get disease prediction. Status: {resp.status}"

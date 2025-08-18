@@ -52,12 +52,14 @@ def create_rag_chain_for_crop(llm):
 
 INSTRUCTIONS:
 1.  Your entire focus is to answer the FARMER'S QUERY below.
-2.  To formulate your answer, you MUST synthesize the information from the AVAILABLE CONTEXT block. This context is your primary source of truth.
-3.  Consider the `CONVERSATION HISTORY` to understand the flow of the conversation and avoid repeating information.
-4.  If the retrieved data within the context is empty or clearly insufficient, use your general knowledge, but you MUST start with: "Based on general agricultural knowledge:"
-5.  Integrate the location, crop, and weather details to make the answer personalized and relevant.
-6.  Address all parts of the farmer's query.
-7.  If some information is not available, Use general information.
+2.  If there is location or crop name in farmer's query, use it instead of featched one for response.
+3.  To formulate your answer, you MUST synthesize the information from the AVAILABLE CONTEXT block. This context is your primary source of truth.
+4.  Consider the `CONVERSATION HISTORY` to understand the flow of the conversation and avoid repeating information.
+5.  If the retrieved data within the context is empty or clearly insufficient, use your general knowledge, but you MUST start with: "Based on general agricultural knowledge:"
+6.  Integrate the location, crop, and weather details to make the answer personalized and relevant.
+7.  Address all parts of the farmer's query.
+8.  If some information is not available, Use general information.
+9.  If farmer is requesting some recommendations for which crop to sow, then provide them these recommendations with no interference from crop name that being passed.
 ---
 
 ## CONTEXT
@@ -118,6 +120,16 @@ def create_multi_index_rag_chain_for_crop(llm, retriever):
         Runnable chain
     """
     template = """You are an expert Agricultural AI Assistant. Use the GENERAL CONTEXT plus history.
+    Instructions:
+    1.  Your entire focus is to answer the FARMER'S QUERY below.
+2.  If there is location or crop name in farmer's query, use it instead of featched one for response.
+3.  To formulate your answer, you MUST synthesize the information from the AVAILABLE CONTEXT block. This context is your primary source of truth.
+4.  Consider the `CONVERSATION HISTORY` to understand the flow of the conversation and avoid repeating information.
+5.  If the retrieved data within the context is empty or clearly insufficient, use your general knowledge, but you MUST start with: "Based on general agricultural knowledge:"
+6.  Integrate the location, crop, and weather details to make the answer personalized and relevant.
+7.  Address all parts of the farmer's query.
+8.  If some information is not available, Use general information.
+9.  If farmer is requesting some recommendations for which crop to sow, then provide them these recommendations with no interference from crop name that being passed.
 
 Location: {location}
 Crop: {crop_name}

@@ -63,10 +63,11 @@ def create_rag_chain_for_tool(llm):
 
 INSTRUCTIONS:
 1.  Carefully analyze the farmer's query and the on-field situation described in the `AVAILABLE CONTEXT` block. Pay close attention to the actions implied in the 'Details of Immediate Issues' and 'Future Planning Needs'.
-2.  Based on the required tasks (e.g., spraying pesticides, improving irrigation, monitoring pests, soil preparation), identify a list of suitable tools and technologies from your knowledge base.
-3.  For each tool, you must provide its name, type, a brief description of what it does, and an estimated price range.
-4.  The final output MUST be a JSON array. Each element in the array will be an object representing one recommended tool.
-5.  If the situation does not call for any specific tools, return an empty array `[]`.
+2.  If there is some information  available in both `FARMER'S QUERY` and `AVAILABLE CONTEXT`, use `FARMER'S QUERY` for response.
+3.  Based on the required tasks (e.g., spraying pesticides, improving irrigation, monitoring pests, soil preparation), identify a list of suitable tools and technologies from your knowledge base.
+4.  For each tool, you must provide its name, type, a brief description of what it does, and an estimated price range.
+5.  The final output MUST be a JSON array. Each element in the array will be an object representing one recommended tool.
+6.  If the situation does not call for any specific tools, return an empty array `[]`.
 
 ---
 
@@ -80,7 +81,7 @@ INSTRUCTIONS:
 - **Location**: {location}
 - **Crop Name**: {crop_name}
 - **Relevant Weather**: {weather}
-- **Details of Immediate Issues**: {short_term_answers}
+
 - **Details of Future Planning Needs**: {long_term_a}
 
 ---
@@ -108,7 +109,6 @@ JSON_TOOL_RECOMMENDATIONS:
             "location": itemgetter("location"),
             "crop_name": itemgetter("crop_name"),
             "weather": itemgetter("weather"),
-            "short_term_answers": itemgetter("short_term_answers"),
             "long_term_a": itemgetter("long_term_a"),
         }
         | prompt
