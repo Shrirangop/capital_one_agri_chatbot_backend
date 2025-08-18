@@ -21,7 +21,7 @@ async def _fetch_chat_history(phone_number: int) -> dict:
     """Fetch the user's chat history from the database."""
     logging.info(f"Fetching chat history for user {phone_number}...")
     chat_history = await chat_histories_collection.find_one({'user_id': phone_number})
-    print(f"Chat history fetched: {chat_history}")
+    # print(f"Chat history fetched: {chat_history}")
 
     if not chat_history:
         logging.error(f"No chat history found for user {phone_number}.")
@@ -319,6 +319,9 @@ async def invoke_crop_agent_chain(
 
     # Represent long_term_summary as JSON string (LLM-safe) if list not empty
     long_term_summary_str = _json.dumps(long_term_summary) if long_term_summary else ""
+
+
+    
 
     # 5. Construct the input object for the RAG chain (align with prompt variables)
     chain_input = {

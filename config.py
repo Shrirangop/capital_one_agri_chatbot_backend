@@ -23,10 +23,13 @@ CAPITAL_CSV_DIRECTORY = os.getenv("CAPITAL_CSV_DIRECTORY", r"E:\\Capital One\\ch
 PDF_DIRECTORY = os.getenv("PDF_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\pdf")
 FINANCE_DIRECTORY = os.getenv("FINANCE_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\Finances")
 TOOLS_DIRECTORY = os.getenv("TOOLS_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\Tools")
+# Directory for disease-related documents
+DISEASE_DIRECTORY = os.getenv("DISEASE_DIRECTORY", r"E:\\Capital One\\chatbot_backend\\database\\Disease")
 
 # Optional dedicated index names for finance & tools (else include in PINECONE_INDEX_NAMES)
 FINANCE_INDEX_NAME = os.getenv("FINANCE_INDEX_NAME", "capital-finance-index")
 TOOLS_INDEX_NAME = os.getenv("TOOLS_INDEX_NAME", "capital-tools-index")
+DISEASE_INDEX_NAME = os.getenv("DISEASE_INDEX_NAME", "capital-dis-index")
 
 # Web form base URL for first-time user data capture
 USER_FORM_URL = os.getenv("USER_FORM_URL", "https://your-frontend.example.com/farmer-onboarding")

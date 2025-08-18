@@ -6,13 +6,16 @@ import requests
 import secrets
 import logging
 from typing import List
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, File, Form, UploadFile
 from pydantic import BaseModel, HttpUrl
 from langchain_community.document_loaders import PyPDFLoader  # updated per deprecation warning
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS  # updated per deprecation warning
 from fastapi.security import APIKeyHeader
+from langchain_huggingface import HuggingFaceEmbeddings
 import config
+
+from datetime import datetime
 
 # Import your services
 
@@ -30,6 +33,9 @@ from services.initialise_crop_llm import (
 from agents.crop_agent_invocation import invoke_crop_agent_chain
 from agents.finance_agent_invocation import invoke_finance_agent_chain
 from agents.tool_agent_invocation import invoke_tool_agent_chain
+from agents.disease_agent_invocation import invoke_disease_agent_chain
+from agents.brain_agent_invocation import route_query
+
 from database.init_db import users_collection, chat_histories_collection
 
 # This tells FastAPI to look for a header named "Authorization"
@@ -89,6 +95,9 @@ tools_embeddings = None
 tools_index = None
 tools_retriever = None
 tools_chain = None
+
+disease_rag_chain, disease_retriever, disease_embeddings_model, disease_pinecone_index = None, None, None, None
+disease_llm = None
 
 def initialize_services_sync():
     """Placeholder core initialization (currently using crop multi-index only)."""
@@ -154,6 +163,34 @@ async def _init_tools_services_if_needed():
     tools_chain = create_rag_chain_for_tool(tools_llm)
     logging.info("Tools agent initialized.")
 
+async def _init_disease_services_if_needed():
+    global disease_llm,disease_rag_chain, disease_retriever, disease_embeddings_model, disease_pinecone_index
+    if disease_rag_chain is not None and disease_retriever is not None:
+        return
+    from services.initialise_disease_vectordb import init_disease_index, build_disease_retriever
+    from services.initialise_disease_llm import initialize_llm_and_embeddings_for_disease, create_rag_chain_for_disease
+    logging.info("Initializing disease agent services...")
+
+    disease_llm, disease_embeddings_model = initialize_llm_and_embeddings_for_disease()
+    _ ,disease_pinecone_index= init_disease_index()
+    disease_retriever = build_disease_retriever(disease_pinecone_index, disease_embeddings_model)
+    disease_rag_chain = create_rag_chain_for_disease(disease_llm)
+    logging.info("Disease agent initialized.")
+
+
+#-----Generate Embeddings and LLMs for Chat history-----
+
+def _generate_embeddings_for_chat_history():
+    """Generate embeddings model for chat history."""
+    global embeddings_model
+    if embeddings_model is None:
+        logging.info("Initializing embeddings model for chat history...")
+        embeddings_model = HuggingFaceEmbeddings(
+            model_name=config.EMBEDDING_MODEL,
+            model_kwargs={"device": 'cpu'}
+        )
+    return embeddings_model
+
 
 class CropTestRequest(BaseModel):
     question: str
@@ -208,6 +245,8 @@ async def test_crop_agent(req: CropTestRequest):
         upsert=True
     )
 
+    
+
     # Run the crop agent invocation (collect streaming output)
     chunks = []
     async for part in invoke_crop_agent_chain(
@@ -219,7 +258,36 @@ async def test_crop_agent(req: CropTestRequest):
     ):
         chunks.append(str(part))
 
-    return {"user_id": uid, "answer": "".join(chunks)}
+    answer = "".join(chunks)
+
+    # Ensure embeddings model is initialized
+    _generate_embeddings_for_chat_history()
+    # Use the embeddings model to generate question embeddings
+    question_embedding = embeddings_model.embed_query(req.question)
+    answer_embedding = embeddings_model.embed_query(answer)
+
+
+# Update chat history with new question and answer embeddings
+    await chat_histories_collection.update_one(
+        {"user_id": uid},
+        {
+            "$push": {
+               "q_embeddings": {"embed":question_embedding,"question": req.question},
+                "ans_embeddings": {"embed":answer_embedding,"answer": answer},
+                "last_two_qs": {
+                    "$each": [req.question], # Add the new question
+                    "$slice": -2             # Keep only the last 2 elements
+                },
+                "last_two_ans": {
+                    "$each": [answer],       # Add the new answer
+                    "$slice": -2             # Keep only the last 2 elements
+                }
+            },
+            "$set": {"last_updated": datetime.now()}
+        }
+    )
+
+    return {"user_id": uid, "answer": answer}
 
 class FinanceTestRequest(BaseModel):
     question: str
@@ -245,6 +313,37 @@ async def test_finance_agent(req: FinanceTestRequest):
         phone_number=uid
     ):
         chunks.append(str(part))
+
+    
+
+    answer = "".join(chunks)
+
+    # Ensure embeddings model is initialized
+    _generate_embeddings_for_chat_history()
+    # Use the embeddings model to generate question embeddings
+    question_embedding = embeddings_model.embed_query(req.question)
+    answer_embedding = embeddings_model.embed_query(answer)
+
+    
+# Update chat history with new question and answer embeddings
+    await chat_histories_collection.update_one(
+        {"user_id": uid},
+        {
+            "$push": {
+                "q_embeddings": {"embed":question_embedding,"question": req.question},
+                "ans_embeddings": {"embed":answer_embedding,"answer": answer},
+                "last_two_qs": {
+                    "$each": [req.question], # Add the new question
+                    "$slice": -2             # Keep only the last 2 elements
+                },
+                "last_two_ans": {
+                    "$each": [answer],       # Add the new answer
+                    "$slice": -2             # Keep only the last 2 elements
+                }
+            },
+            "$set": {"last_updated": datetime.now()}
+        }
+    )
     return {"user_id": uid, "answer": "".join(chunks)}
 
 class ToolsTestRequest(BaseModel):
@@ -270,7 +369,79 @@ async def test_tools_agent(req: ToolsTestRequest):
         phone_number=uid
     ):
         chunks.append(str(part))
+
+
+    answer = "".join(chunks)
+
+    # Ensure embeddings model is initialized
+    _generate_embeddings_for_chat_history()
+    # Use the embeddings model to generate question embeddings
+    question_embedding = embeddings_model.embed_query(req.question)
+    answer_embedding = embeddings_model.embed_query(answer)
+
+    
+# Update chat history with new question and answer embeddings
+    await chat_histories_collection.update_one(
+        {"user_id": uid},
+        {
+            "$push": {
+                "q_embeddings": {"embed":question_embedding,"question": req.question},
+                "ans_embeddings": {"embed":answer_embedding,"answer": answer},
+                "last_two_qs": {
+                    "$each": [req.question], # Add the new question
+                    "$slice": -2             # Keep only the last 2 elements
+                },
+                "last_two_ans": {
+                    "$each": [answer],       # Add the new answer
+                    "$slice": -2             # Keep only the last 2 elements
+                }
+            },
+            "$set": {"last_updated": datetime.now()}
+        }
+    )
+
+    
     return {"user_id": uid, "answer": "".join(chunks)}
+
+
+@router.post("/diagnose_crop/")
+async def diagnose_crop(
+    crop_name: str = Form(..., description="The name of the crop, e.g., 'tomato'"),
+    phone_number: int = Form(..., description="The user's phone number for context/logging."),
+    image: UploadFile = File(..., description="The image file of the crop to be diagnosed.")
+):
+    """
+    Accepts crop information and an image to diagnose a potential disease.
+
+    This endpoint invokes the RAG agent, collects the full response, and
+    returns it as a single JSON object.
+    """
+    logging.info(f"Received diagnosis request for crop: {crop_name}")
+    image_bytes = await image.read()
+
+    # Ensure disease services are initialized
+    await _init_disease_services_if_needed()
+
+    # 1. Create an empty list to hold the response chunks.
+    response_chunks = []
+
+    # 2. Asynchronously iterate through the generator and append each chunk.
+    async for chunk in invoke_disease_agent_chain(
+        rag_chain=disease_rag_chain,
+        retriever=disease_retriever,
+        embeddings_model=disease_embeddings_model,
+        crop_name=crop_name,
+        phone_number=phone_number,
+        image_file=image_bytes
+    ):
+        response_chunks.append(chunk)
+
+    # 3. Join the chunks into a single final string.
+    final_diagnosis_text = "".join(response_chunks)
+
+    # 4. Return the complete string in a JSON object.
+    # FastAPI automatically handles the conversion from a Python dict to a JSON response.
+    return {"diagnosis": final_diagnosis_text}
 
 
 
@@ -370,3 +541,43 @@ async def get_status():
         "indexes_loaded": bool(pinecone_index),
         "multi_index": crop_ensemble_retriever is not None
     }
+
+class BrainAgentRequest(BaseModel):
+    question: str
+    user_id: int | None = None
+    image_file: bytes | None = None  # For potential image uploads
+
+@router.post("/ask")
+async def ask_brain_agent(req: BrainAgentRequest):
+    # Ensure all agent services are initialized
+    await _init_crop_services_if_needed()
+    await _init_finance_services_if_needed()
+    await _init_tools_services_if_needed()
+    await _init_disease_services_if_needed()
+
+    # You must have a brain_llm instance (initialize as needed)
+    global crop_chain, crop_ensemble_retriever, crop_embeddings
+    global finance_chain, finance_retriever, finance_embeddings
+    global tools_chain, tools_retriever, tools_embeddings
+    global disease_rag_chain, disease_retriever, disease_embeddings_model
+    global brain_llm
+
+    # Initialize brain_llm if not already done (example using crop_llm)
+    if 'brain_llm' not in globals() or brain_llm is None:
+        brain_llm = crop_llm  # Or use a dedicated LLM if you prefer
+
+    # Collect the streamed response
+    chunks = []
+    async for chunk in route_query(
+        req.question,
+        brain_llm,
+        crop_chain, crop_ensemble_retriever, crop_embeddings,
+        finance_chain, finance_retriever, finance_embeddings,
+        tools_chain, tools_retriever, tools_embeddings,
+        disease_rag_chain, disease_retriever, disease_embeddings_model,
+        req.user_id,
+        req.image_file
+    ):
+        chunks.append(str(chunk))
+
+    return {"user_id": req.user_id, "answer": "".join(chunks)}

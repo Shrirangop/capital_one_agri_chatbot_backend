@@ -8,20 +8,18 @@ def create_brain_agent_chain(llm):
     """
     Creates an intelligent routing chain to classify a user's query.
 
-    This "brain" agent determines which specialized agent (crop, finance, tool)
-    should handle the query, or if it's a general question.
+    This "brain" agent determines which specialized agent (crop, finance, tool, disease, general)
+    should handle the query.
 
     Args:
         llm: The initialized language model (e.g., ChatGroq).
 
     Returns:
         A runnable LangChain chain that outputs a classification string
-        (e.g., 'crop_agent', 'finance_agent').
+        (e.g., 'crop_agent', 'finance_agent', 'tool_agent', 'disease_agent', 'general_agent').
     """
     logging.info("Creating Brain Agent (Multi-Route Classifier) chain...")
 
-    # Updated prompt for multi-category classification.
-    # This enables routing to different specialized agents.
     prompt_template = """You are an intelligent routing agent. Your task is to analyze the user's query and classify it into one of the following categories. Respond with only the single, designated string for the most appropriate category.
 
 **Categories & Responses:**
@@ -35,7 +33,10 @@ def create_brain_agent_chain(llm):
 3.  **`tool_agent`**: For queries specifically about **farming tools, machinery, and equipment**. This includes selection, maintenance, and operation of tools.
     * *Examples*: "Which power tiller is best for a 2-acre farm?", "How do I maintain my sprayer?", "Compare rotavators and cultivators."
 
-4.  **`GENERAL_AGENT`**: For any query that does not fit into the other three categories.
+4.  **`disease_agent`**: For queries about **plant diseases, infections, symptoms, or requests for disease diagnosis**. This includes questions about leaf spots, blight, rot, and requests to analyze crop images for disease.
+    * *Examples*: "My brinjal leaves have brown patches, what is it?", "Diagnose the disease from this image.", "What causes powdery mildew in cucurbits?"
+
+5.  **`general_agent`**: For any query that does not fit into the other four categories.
 
 ---
 
