@@ -4,6 +4,35 @@ import logging
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
 
+from typing import AsyncGenerator
+from operator import itemgetter
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.output_parsers import StrOutputParser
+import config
+
+
+def initialize_llm_and_embeddings_brain():
+    """
+    Initializes the Groq LLM (Llama 3.1) and a HuggingFace Embeddings model.
+    
+    Returns:
+        tuple: (llm_instance, embeddings_model_instance)
+    """
+    try:
+        llm = ChatGroq(
+            model_name=config.LLM_MODEL, 
+            groq_api_key=config.GROQ_API_KEY, 
+            temperature=0.2
+        )
+        
+        
+        logging.info(f"LLM ({config.LLM_MODEL}) initialized successfully.")
+        return llm
+    except Exception as e:
+        logging.error(f"Failed to initialize models: {e}")
+        raise
+
 def create_brain_agent_chain(llm):
     """
     Creates an intelligent routing chain to classify a user's query.
