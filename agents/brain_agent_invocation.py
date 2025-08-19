@@ -23,15 +23,15 @@ from agents.disease_agent_invocation import invoke_disease_agent_chain
 
 def build_onboarding_form_message(user_id: str) -> str:
     """Return a structured message containing a link to the onboarding form."""
-    form_url = f"{getattr(config, 'USER_FORM_URL', 'https://your-form-url')}"
+    form_url = f"{getattr(config, 'USER_FORM_URL', 'https://chatbot-frontend-ten-rho.vercel.app/')}"
     instructions = (
         "Please complete the initial farm profile so I can tailor advice. "
         "Provide location (pincode), current crop, and irrigation type."
     )
     return (
         "ONBOARDING_REQUIRED\n" +
-        f"FORM_LINK: {form_url}?user_id={user_id}\n" +
-        "FIELDS: location, crop_type, irrigation_type\n" +
+        f"FORM_LINK: {form_url}\n" +
+        "FIELDS: phone_number, location, crop_type, irrigation_type\n" +
         f"MESSAGE: {instructions}"
     )
 

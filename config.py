@@ -32,7 +32,7 @@ TOOLS_INDEX_NAME = os.getenv("TOOLS_INDEX_NAME", "capital-tools-index")
 DISEASE_INDEX_NAME = os.getenv("DISEASE_INDEX_NAME", "capital-dis-index")
 
 # Web form base URL for first-time user data capture
-USER_FORM_URL = os.getenv("USER_FORM_URL", "https://your-frontend.example.com/farmer-onboarding")
+USER_FORM_URL = os.getenv("USER_FORM_URL", "https://chatbot-frontend-ten-rho.vercel.app/")
 
 
 
