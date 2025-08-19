@@ -2,9 +2,10 @@ import logging
 from typing import AsyncGenerator
 from fastapi import UploadFile
 import httpx
+import os
 
 # The URL for your prediction service
-PREDICT_API_URL = "http://127.0.0.1:8000/predict/"
+PREDICT_API_URL = os.getenv("PREDICT_API_URL", "http://localhost:8000/predict")
 
 async def predict_disease(crop_name: str, image_file_path: str, lang: str = "en") -> dict:
     """
