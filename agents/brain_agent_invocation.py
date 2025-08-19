@@ -40,7 +40,7 @@ async def route_query(
     query: str,
     brain_llm,
     user_id: int,
-    image_file: Union[str, UploadFile, None] = None
+    image_file: Union[UploadFile, str] = None
 ) -> AsyncGenerator[str, None]:
     """
     Routes the query to the correct agent based on brain agent classification.
@@ -86,15 +86,16 @@ async def route_query(
         
         # 1. Call the init function to get the required components
         rag_chain, retriever, embeddings_model = await _init_disease_services_if_needed()
+
+
+        print(image_file)
         
         # 2. Pass these initialized components explicitly to the agent chain
         chunks = []
         async for part in invoke_disease_agent_chain(
             rag_chain=rag_chain,
             retriever=retriever,
-            embeddings_model=embeddings_model,
             crop_name=query,
-            phone_number=user_id,
             image_file=image_file
         ):
             chunks.append(str(part))
@@ -105,3 +106,6 @@ async def route_query(
 
     else:
         yield "I am an agricultural assistant. Please ask me questions about farming, crops, soil, pests, finances, or tools."
+
+
+

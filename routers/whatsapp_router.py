@@ -165,6 +165,7 @@ async def process_message(sender: str, text: str, message: dict):
 
         # --- Audio Message Handling ---
         elif "audio" in message:
+            audio_bytes = None
             send_whatsapp_message(sender, "Got your audio! Analyzing it now... 🤖")
 
             audio_id = message["audio"]["id"]
@@ -190,10 +191,21 @@ async def process_message(sender: str, text: str, message: dict):
                     async with aiofiles.open(audio_file_path, "wb") as f:
                         await f.write(audio_data)
 
-                    # Pass the file path to the speech-to-text function
-                    # english_text = speech_to_english(audio_file_path)
+                    
 
-                    english_text = "What fertilizer should I use for my groundnut crop?"
+
+                    with open(audio_file_path, 'rb') as audio_file:
+                        audio_bytes = audio_file.read()
+
+                    
+
+                    
+                    # Pass the file path to the speech-to-text function
+                    english_text = speech_to_english(audio_bytes)
+
+                    print(f"This is the transcribed text : {english_text}")
+
+                    # english_text = "What fertilizer should I use for my groundnut crop?"
                     
                     req = BrainAgentRequest(question=english_text, user_id=int(sender))
                     answer = await ask_brain_agent(req)

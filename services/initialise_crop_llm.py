@@ -130,9 +130,9 @@ def create_multi_index_rag_chain_for_crop(llm, retriever):
 7.  Address all parts of the farmer's query.
 8.  If some information is not available, Use general information.
 9.  If farmer is requesting some recommendations for which crop to sow, then provide them these recommendations with no interference from crop name that being passed.
+10. If the query doesnot specify any crop name, then use the crop as {crop_name}.
 
 Location: {location}
-Crop: {crop_name}
 Weather: {weather}
 
 GENERAL CONTEXT:

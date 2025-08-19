@@ -1,179 +1,99 @@
 import logging
-from typing import AsyncGenerator,Union, IO
-import math  # may be unused; retained if future numeric ops needed
-import json as _json
-from database.init_db import users_collection, chat_histories_collection
-
-
+from typing import AsyncGenerator
 from fastapi import UploadFile
-import requests
-import json
-import config
-import numpy as np
-import aiohttp
-
-
 import httpx
-from typing import Union, IO
 
-# You'll need to install httpx:
-# pip install httpx
+# The URL for your prediction service
+PREDICT_API_URL = "http://127.0.0.1:8000/predict/"
 
-# Assume DISEASE_API_URL is defined elsewhere, e.g.:
-DISEASE_API_URL = "http://127.0.0.1:8000/predict/"
-
-async def _fetch_disease(crop_name: str, image_file: Union[str, UploadFile], lang: str = "en") -> str:
+async def predict_disease(crop_name: str, image_file_path: str, lang: str = "en") -> dict:
     """
-    Predicts crop disease by sending an image to the disease detection API asynchronously.
+    Correctly reads an image file from a given path and sends its content 
+    to the disease prediction API.
+    Returns a dictionary with the prediction result or an error.
     """
-    logging.info(f"Predicting disease for {crop_name}...")
+    if not image_file_path:
+        return {"error": "No image file path was provided."}
 
-    payload = {
-        "crop_type": crop_name,
-        "lang": lang
-    }
+    logging.info(f"Predicting disease for crop: {crop_name} from path: {image_file_path}")
+    try:
+        # --- THE KEY FIX ---
+        # 1. Open the file from the path in binary read mode ('rb').
+        #    The 'with' statement ensures the file is properly closed.
+        with open(image_file_path, "rb") as f:
+            # 2. Read the entire file content into bytes.
+            image_bytes = f.read()
+        
+        # 3. Prepare the payload for the multipart/form-data request.
+        payload = {"crop_type": crop_name, "lang": lang}
+        # The filename in the tuple can be generic as it's part of the request body.
+        files = {"image": ("image.jpeg", image_bytes, "image/jpeg")}
 
-    files = {
-    "image": ("image.jpeg", image_file, "image/jpeg")
-    }
-
-    
-
-
-    
-    
-
-    # Use an asynchronous client with a context manager
-    async with httpx.AsyncClient() as client:
-        try:
-            # --- Execute the Request and Handle Response ---
-            # Use 'await' for the asynchronous network call
-            response = await client.post(DISEASE_API_URL, data=payload, files=files)
+        # 4. Make the API call using an async client.
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(PREDICT_API_URL, data=payload, files=files)
+            response.raise_for_status()  # Raises an exception for 4xx/5xx errors
             
-            # This will raise an exception for HTTP error codes (4xx or 5xx)
-            response.raise_for_status()
+            # Return the successful JSON response
+            return response.json()
 
-            # Parse the JSON response from the API
-            data = response.json()
-
-            # --- Process Response ---
-            if "error" in data:
-                error_msg = f"API returned an error for {crop_name}: {data['error']}"
-                logging.error(error_msg)
-                return error_msg
-
-            predicted_class = data.get("class")
-            if not predicted_class:
-                error_msg = f"API response for {crop_name} is missing the 'class' key."
-                logging.error(error_msg)
-                return error_msg
-
-            logging.info(f"Successfully predicted disease for {crop_name}: {predicted_class}")
-            return predicted_class
-
-        # --- Error Handling ---
-        # Updated to use httpx's specific exceptions
-        except httpx.HTTPStatusError as http_err:
-            error_msg = f"An HTTP error occurred for {crop_name}: {http_err}. Response: {http_err.response.text}"
-            logging.error(error_msg)
-            return error_msg
-        except httpx.RequestError as req_err:
-            error_msg = f"A network error occurred for {crop_name}: {req_err}"
-            logging.error(error_msg)
-            return error_msg
-        except Exception as e:
-            logging.exception(f"An unexpected error occurred for {crop_name}: {e}")
-            error_msg = f"An unexpected error occurred for {crop_name}: {e}"
-            logging.error(error_msg)
-            return error_msg
-
-
-
-
+    except FileNotFoundError:
+        error_msg = f"Error: The file was not found at the path '{image_file_path}'"
+        logging.error(error_msg)
+        return {"error": error_msg}
+    except httpx.HTTPStatusError as http_err:
+        error_msg = f"Prediction API returned an error: {http_err.response.status_code} {http_err.response.text}"
+        logging.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        error_msg = f"An unexpected error occurred while predicting disease: {e}"
+        logging.exception(error_msg) # Use .exception to log stack trace
+        return {"error": error_msg}
 
 
 async def invoke_disease_agent_chain(
     rag_chain,
     retriever,
-    embeddings_model, 
     crop_name: str,
-    phone_number: int,
-    image_file: Union[str, UploadFile, None] = None # <-- Add image_file parameter
+    image_file: str, # Renamed for clarity
 ) -> AsyncGenerator[str, None]:
-    
-    logging.info(f"Disease Agent invoked for crop: {crop_name}")
-    
-    # 1. Fetch disease data by calling the API
-    # You might want to get the language from the user's profile
-    # disease = await _fetch_disease(crop_name, image_file, lang="en")
+    """
+    Full chain for the disease agent: predict, retrieve, and generate.
+    """
+    # 1. Get the disease prediction from the API using the file path.
+    prediction_result = await predict_disease(crop_name, image_file)
 
-    disease = "GROUNDNUT LEAF SPOT (EARLY AND LATE)"
-
-    
-
-    # If the API call returned an error message, yield it and stop.
-    if "error" in disease.lower() or "occurred" in disease.lower():
-        yield disease
+    # 2. Check if the prediction failed.
+    if "error" in prediction_result:
+        yield f"Could not analyze the image. Reason: {prediction_result['error']}"
         return
 
-    # 2. Retrieve relevant documents from the vector store based on the predicted disease
+    predicted_disease = prediction_result.get("class")
+    if not predicted_disease:
+        yield "Analysis failed: The API response did not contain a disease class."
+        return
 
-    crop_name = 'groundnut'
+    yield f"**Diagnosis:** I've identified **{predicted_disease}** on your {crop_name} plant.\n\n"
+    yield "Searching for treatment information...\n\n"
 
-    query = f"{disease} for {crop_name}"
+    # 3. Use the predicted disease to query the RAG chain for a solution.
+    query = f"treatment and prevention for {predicted_disease} in {crop_name}"
+    logging.info(f"Retrieving documents for RAG query: {query}")
 
-
-    logging.info(f"Retrieving documents for disease: {disease} and crop: {crop_name}")
-
-    retrieved_docs = retriever.invoke(query)
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
-    context_str = format_docs(retrieved_docs)
-
-    # ... (rest of your function remains the same)
-    
-    # 5. Construct the input for the RAG chain
-
-    logging.info("Constructing input for RAG chain...")
-   
-   
-
-    chain_input = {
-        "context": context_str,
-        "crop_name": crop_name,
-        "disease_name": disease
-        # ... other parameters
-    }
-
-    # 6. Stream the response
     try:
+        retrieved_docs = retriever.invoke(query)
+        context_str = "\n\n".join(doc.page_content for doc in retrieved_docs)
+
+        chain_input = {
+            "context": context_str,
+            "crop_name": crop_name,
+            "disease_name": predicted_disease
+        }
+
+        # 4. Stream the final response from the RAG chain.
         async for chunk in rag_chain.astream(chain_input):
             yield chunk
+
     except Exception as e:
-        logging.error(f"Disease RAG chain streaming failed: {e}")
-        yield f"Error: {e}"
-
-    logging.info("Disease Agent streaming finished.")
-
-# async def invoke_disease_agent_chain(
-#     disease_rag_chain, disease_retriever, disease_embeddings,
-#     crop_name: str, user_id: int, image_file: bytes
-# ):
-#     """
-#     Calls the disease detection API with crop_name and image, yields the result.
-#     """
-#     DISEASE_API_URL = getattr(config, "DISEASE_API_URL", "http://127.0.0.1:8000/predict/")
-#     lang = "en"  # or get from user profile
-
-#     data = aiohttp.FormData()
-#     data.add_field('crop_type', crop_name)
-#     data.add_field('lang', lang)
-#     data.add_field('image', image_file, filename="crop.jpg", content_type="image/jpeg")
-
-#     async with aiohttp.ClientSession() as session:
-#         async with session.post(DISEASE_API_URL, data=data) as resp:
-#             if resp.status == 200:
-#                 result = await resp.json()
-#                 yield f"Disease prediction: {result.get('class', 'Unknown')} (confidence: {result.get('confidence', 0):.2f})"
-#             else:
-#                 yield f"Failed to get disease prediction. Status: {resp.status}"
+        logging.error(f"Disease RAG chain failed: {e}")
+        yield "Sorry, I couldn't retrieve treatment information due to an error."

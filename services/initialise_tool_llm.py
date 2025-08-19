@@ -66,7 +66,7 @@ INSTRUCTIONS:
 2.  If there is some information  available in both `FARMER'S QUERY` and `AVAILABLE CONTEXT`, use `FARMER'S QUERY` for response.
 3.  Based on the required tasks (e.g., spraying pesticides, improving irrigation, monitoring pests, soil preparation), identify a list of suitable tools and technologies from your knowledge base.
 4.  For each tool, you must provide its name, type, a brief description of what it does, and an estimated price range.
-5.  The final output MUST be a JSON array. Each element in the array will be an object representing one recommended tool.
+5.  If query specifies to give one recommendation, give the best suited recommenadtion.
 6.  If the situation does not call for any specific tools, return an empty array `[]`.
 
 ---
@@ -87,12 +87,12 @@ INSTRUCTIONS:
 ---
 
 ## OUTPUT SPECIFICATIONS
-- **Format**: Your final output MUST be a valid JSON array `[...]`.
+- **Format**: Your final output MUST be a paragrap with bullet points.
 - **Object Structure**: Each object within the array must contain these and only these four keys: `tool_name` (string), `tool_type` (string, e.g., "Sprayer", "Sensor", "Tillage", "Trap"), `description` (string), and `estimated_price` (string, e.g., "₹5,000 - ₹8,000").
 - **Relevance**: Recommendations must be directly relevant to solving the problems or implementing the plans described in the `FARMER'S QUERY` and `AVAILABLE CONTEXT`.
 - **Pricing**: Provide a realistic price range in the local currency (e.g., INR for India) to account for market variations.
 
-JSON_TOOL_RECOMMENDATIONS:
+RECOMMENDATIONS:
 """
     
     prompt = PromptTemplate.from_template(template)
