@@ -124,7 +124,7 @@ async def invoke_tool_agent_chain(
 
     # 1. Fetch user data and chat history
     user_data = await _fetch_user_data(phone_number)
-    chat_history = await _fetch_chat_history(phone_number)
+    # chat_history = await _fetch_chat_history(phone_number)
 
     # Resolve location and fetch weather
     location_raw = user_data.get('location', '')
@@ -138,40 +138,40 @@ async def invoke_tool_agent_chain(
     docs = retriever.invoke(query)
     context_str = "\n\n".join(d.page_content for d in docs)
 
-    # 3. Build short-term history text
-    last_qs = chat_history.get("last_two_qs", [])
-    last_ans = chat_history.get("last_two_ans", [])
-    short_pairs = []
-    for i, q in enumerate(last_qs):
-        ans = last_ans[i] if i < len(last_ans) else ""
-        short_pairs.append(f"Q: {q}\nA: {ans}")
+    # # 3. Build short-term history text
+    # last_qs = chat_history.get("last_two_qs", [])
+    # last_ans = chat_history.get("last_two_ans", [])
+    # short_pairs = []
+    # for i, q in enumerate(last_qs):
+    #     ans = last_ans[i] if i < len(last_ans) else ""
+    #     short_pairs.append(f"Q: {q}\nA: {ans}")
         
-    short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
+    # short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
 
-    # 4. Compute long-term summary
-    long_term_summary = []
-    try:
-        stored_q_embs = chat_history.get("q_embeddings", []) or []
-        if stored_q_embs and hasattr(embeddings_model, 'embed_query'):
-            query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32).reshape(1, -1)
-            q_matrix = np.array(stored_q_embs, dtype=np.float32)
+    # # 4. Compute long-term summary
+    # long_term_summary = []
+    # try:
+    #     stored_q_embs = chat_history.get("q_embeddings", []) or []
+    #     if stored_q_embs and hasattr(embeddings_model, 'embed_query'):
+    #         query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32).reshape(1, -1)
+    #         q_matrix = np.array(stored_q_embs, dtype=np.float32)
             
-            faiss.normalize_L2(query_emb)
-            faiss.normalize_L2(q_matrix)
+    #         faiss.normalize_L2(query_emb)
+    #         faiss.normalize_L2(q_matrix)
 
-            index = faiss.IndexFlatIP(q_matrix.shape[1])
-            index.add(q_matrix)
+    #         index = faiss.IndexFlatIP(q_matrix.shape[1])
+    #         index.add(q_matrix)
             
-            top_k = min(3, q_matrix.shape[0])
-            sims, idxs = index.search(query_emb, top_k)
+    #         top_k = min(3, q_matrix.shape[0])
+    #         sims, idxs = index.search(query_emb, top_k)
             
-            for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
-                long_term_summary.append({"rank": pos + 1, "similarity": float(sim)})
+    #         for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
+    #             long_term_summary.append({"rank": pos + 1, "similarity": float(sim)})
 
-    except Exception as e:
-        logging.error(f"Failed to compute long_term_summary: {e}")
+    # except Exception as e:
+    #     logging.error(f"Failed to compute long_term_summary: {e}")
     
-    long_term_summary_str = _json.dumps(long_term_summary) if long_term_summary else ""
+    # long_term_summary_str = _json.dumps(long_term_summary) if long_term_summary else ""
 
     # 5. Construct the input for the RAG chain
     chain_input = {
@@ -180,7 +180,7 @@ async def invoke_tool_agent_chain(
         "location": location,
         "crop_name": crop_name,
         "weather": weather,
-        "long_term_a": long_term_summary_str
+       
     }
 
     # 6. Stream the response

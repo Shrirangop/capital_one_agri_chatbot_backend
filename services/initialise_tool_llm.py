@@ -82,7 +82,7 @@ INSTRUCTIONS:
 - **Crop Name**: {crop_name}
 - **Relevant Weather**: {weather}
 
-- **Details of Future Planning Needs**: {long_term_a}
+
 
 ---
 
@@ -109,7 +109,7 @@ RECOMMENDATIONS:
             "location": itemgetter("location"),
             "crop_name": itemgetter("crop_name"),
             "weather": itemgetter("weather"),
-            "long_term_a": itemgetter("long_term_a"),
+     
         }
         | prompt
         | llm

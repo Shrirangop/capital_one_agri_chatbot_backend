@@ -70,8 +70,7 @@ INSTRUCTIONS:
 - **Location**: {location}
 - **Crop Name**: {crop_name}
 - **Relevant Weather**: {weather}
-- **Details of Immediate Issues**: {short_term_history}
-- **Details of Future Planning Needs**: {long_term_summary}
+
 
 ---
 
@@ -100,8 +99,8 @@ JSON_OUTPUT:
             "location": itemgetter("location"),
             "crop_name": itemgetter("crop_name"),
             "weather": itemgetter("weather"),
-            "short_term_history": itemgetter("short_term_history"),
-            "long_term_summary": itemgetter("long_term_summary"),
+            # "short_term_history": itemgetter("short_term_history"),
+            # "long_term_summary": itemgetter("long_term_summary"),
         }
         | prompt
         | llm

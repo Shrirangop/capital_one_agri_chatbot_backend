@@ -225,71 +225,71 @@ async def invoke_crop_agent_chain(
         return "\n\n".join(doc.page_content for doc in docs)
     context_str = format_docs(retrieved_docs)
 
-    # 3. Build short-term history (last two Q/A pairs) text
-    last_qs = chat_history.get("last_two_qs", [])
-    last_ans = chat_history.get("last_two_ans", [])
-    short_pairs = []
-    for i, q in enumerate(last_qs):
-        ans = last_ans[i] if i < len(last_ans) else ""
-        short_pairs.append(f"Q: {q}\nA: {ans}")
-    short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
+    # # 3. Build short-term history (last two Q/A pairs) text
+    # last_qs = chat_history.get("last_two_qs", [])
+    # last_ans = chat_history.get("last_two_ans", [])
+    # short_pairs = []
+    # for i, q in enumerate(last_qs):
+    #     ans = last_ans[i] if i < len(last_ans) else ""
+    #     short_pairs.append(f"Q: {q}\nA: {ans}")
+    # short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
 
-    # 4. Compute long-term summary using FAISS if available, else fallback cosine loop
-    long_term_summary = []
-    try:
-        stored_q_embs = chat_history.get("q_embeddings", []) or []
-        stored_a_embs = chat_history.get("ans_embeddings", []) or []
-        top_k = 3  # limit to top 3
+    # # 4. Compute long-term summary using FAISS if available, else fallback cosine loop
+    # long_term_summary = []
+    # try:
+    #     stored_q_embs = chat_history.get("q_embeddings", []) or []
+    #     stored_a_embs = chat_history.get("ans_embeddings", []) or []
+    #     top_k = 3  # limit to top 3
 
-        # Extract only the embedding vectors for FAISS/numpy
-        q_vectors = [q.get("embed", []) for q in stored_q_embs]
-        a_vectors = [a.get("embed", []) for a in stored_a_embs]
-        a_texts = [a.get("answer", "") for a in stored_a_embs]
+    #     # Extract only the embedding vectors for FAISS/numpy
+    #     q_vectors = [q.get("embed", []) for q in stored_q_embs]
+    #     a_vectors = [a.get("embed", []) for a in stored_a_embs]
+    #     a_texts = [a.get("answer", "") for a in stored_a_embs]
 
-        if q_vectors and hasattr(embeddings_model, 'embed_query'):
-            query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32)
-            q_matrix = np.array(q_vectors, dtype=np.float32)
+    #     if q_vectors and hasattr(embeddings_model, 'embed_query'):
+    #         query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32)
+    #         q_matrix = np.array(q_vectors, dtype=np.float32)
 
-            def _normalize(mat):
-                norms = np.linalg.norm(mat, axis=1, keepdims=True)
-                norms[norms == 0] = 1.0
-                return mat / norms
+    #         def _normalize(mat):
+    #             norms = np.linalg.norm(mat, axis=1, keepdims=True)
+    #             norms[norms == 0] = 1.0
+    #             return mat / norms
 
-            query_emb = _normalize(query_emb.reshape(1, -1))[0]
-            q_matrix = _normalize(q_matrix)
-            if _FAISS_AVAILABLE and q_matrix.shape[0] >= 1:
-                index = faiss.IndexFlatIP(q_matrix.shape[1])
-                index.add(q_matrix)
-                sims, idxs = index.search(query_emb.reshape(1, -1), min(top_k, q_matrix.shape[0]))
-                for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
-                    long_term_summary.append({
-                        "rank": pos + 1,
-                        "q_index": int(idx),
-                        "similarity": float(sim),
-                        "question": stored_q_embs[idx].get("question", ""),
-                        "answer": a_texts[idx] if idx < len(a_texts) else ""
-                    })
-            else:
-                sims = [(idx, float(np.dot(query_emb, vec))) for idx, vec in enumerate(q_matrix)]
-                selected = sorted(sims, key=lambda x: x[1], reverse=True)[:top_k]
-                for pos, (idx, sim) in enumerate(selected):
-                    long_term_summary.append({
-                        "rank": pos + 1,
-                        "q_index": int(idx),
-                        "similarity": float(sim),
-                        "question": stored_q_embs[idx].get("question", ""),
-                        "answer": a_texts[idx] if idx < len(a_texts) else ""
-                    })
-    except Exception as e:
-        logging.error(f"Failed to compute long_term_summary (FAISS stage): {e}")
+    #         query_emb = _normalize(query_emb.reshape(1, -1))[0]
+    #         q_matrix = _normalize(q_matrix)
+    #         if _FAISS_AVAILABLE and q_matrix.shape[0] >= 1:
+    #             index = faiss.IndexFlatIP(q_matrix.shape[1])
+    #             index.add(q_matrix)
+    #             sims, idxs = index.search(query_emb.reshape(1, -1), min(top_k, q_matrix.shape[0]))
+    #             for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
+    #                 long_term_summary.append({
+    #                     "rank": pos + 1,
+    #                     "q_index": int(idx),
+    #                     "similarity": float(sim),
+    #                     "question": stored_q_embs[idx].get("question", ""),
+    #                     "answer": a_texts[idx] if idx < len(a_texts) else ""
+    #                 })
+    #         else:
+    #             sims = [(idx, float(np.dot(query_emb, vec))) for idx, vec in enumerate(q_matrix)]
+    #             selected = sorted(sims, key=lambda x: x[1], reverse=True)[:top_k]
+    #             for pos, (idx, sim) in enumerate(selected):
+    #                 long_term_summary.append({
+    #                     "rank": pos + 1,
+    #                     "q_index": int(idx),
+    #                     "similarity": float(sim),
+    #                     "question": stored_q_embs[idx].get("question", ""),
+    #                     "answer": a_texts[idx] if idx < len(a_texts) else ""
+    #                 })
+    # except Exception as e:
+    #     logging.error(f"Failed to compute long_term_summary (FAISS stage): {e}")
 
-    # Represent long_term_summary as a readable string for the LLM
-    if long_term_summary:
-        long_term_summary_str = "\n---\n".join(
-            f"Q: {e['question']}\nA: {e['answer']}" for e in long_term_summary if e.get("answer")
-        )
-    else:
-        long_term_summary_str = ""
+    # # Represent long_term_summary as a readable string for the LLM
+    # if long_term_summary:
+    #     long_term_summary_str = "\n---\n".join(
+    #         f"Q: {e['question']}\nA: {e['answer']}" for e in long_term_summary if e.get("answer")
+    #     )
+    # else:
+    #     long_term_summary_str = ""
 
 
     
@@ -301,8 +301,7 @@ async def invoke_crop_agent_chain(
         "crop_name": crop_name,
         "weather": weather,
         "general_context": context_str,  # matches create_rag_chain_for_crop
-        "short_term_history": short_term_history,
-        "long_term_summary": long_term_summary_str
+       
     }
 
     # 6. Stream the response from the RAG chain

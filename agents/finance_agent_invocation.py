@@ -139,7 +139,7 @@ async def invoke_finance_agent_chain(
 
     # 1. Fetch user data and chat history
     user_data = await _fetch_user_data(phone_number)
-    chat_history = await _fetch_chat_history(phone_number)
+    # chat_history = await _fetch_chat_history(phone_number)
 
     # Resolve location from pincode if necessary
     location_raw = user_data.get('location', '')
@@ -153,72 +153,72 @@ async def invoke_finance_agent_chain(
     docs = retriever.invoke(query)
     context_str = "\n\n".join(d.page_content for d in docs)
 
-    # 3. Build short-term history text
-    last_qs = chat_history.get("last_two_qs", [])
-    last_ans = chat_history.get("last_two_ans", [])
-    short_pairs = []
-    for i, q in enumerate(last_qs):
-        ans = last_ans[i] if i < len(last_ans) else ""
-        short_pairs.append(f"Q: {q}\nA: {ans}")
-    short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
+    # # 3. Build short-term history text
+    # last_qs = chat_history.get("last_two_qs", [])
+    # last_ans = chat_history.get("last_two_ans", [])
+    # short_pairs = []
+    # for i, q in enumerate(last_qs):
+    #     ans = last_ans[i] if i < len(last_ans) else ""
+    #     short_pairs.append(f"Q: {q}\nA: {ans}")
+    # short_term_history = "\n---\n".join(short_pairs) if short_pairs else ""
 
-    # 4. Compute long-term summary
-    long_term_summary = []
-    centroid_embedding = None
-    try:
-        stored_q_embs = chat_history.get("q_embeddings", []) or []
-        stored_a_embs = chat_history.get("ans_embeddings", []) or []
-        top_k = 3
-        if stored_q_embs and hasattr(embeddings_model, 'embed_query'):
-            query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32)
-            q_matrix = np.array(stored_q_embs, dtype=np.float32)
+    # # 4. Compute long-term summary
+    # long_term_summary = []
+    # centroid_embedding = None
+    # try:
+    #     stored_q_embs = chat_history.get("q_embeddings", []) or []
+    #     stored_a_embs = chat_history.get("ans_embeddings", []) or []
+    #     top_k = 3
+    #     if stored_q_embs and hasattr(embeddings_model, 'embed_query'):
+    #         query_emb = np.array(embeddings_model.embed_query(query), dtype=np.float32)
+    #         q_matrix = np.array(stored_q_embs, dtype=np.float32)
 
-            def _normalize(mat):
-                norms = np.linalg.norm(mat, axis=1, keepdims=True)
-                norms[norms == 0] = 1.0
-                return mat / norms
+    #         def _normalize(mat):
+    #             norms = np.linalg.norm(mat, axis=1, keepdims=True)
+    #             norms[norms == 0] = 1.0
+    #             return mat / norms
 
-            query_emb = _normalize(query_emb.reshape(1, -1))[0]
-            q_matrix = _normalize(q_matrix)
+    #         query_emb = _normalize(query_emb.reshape(1, -1))[0]
+    #         q_matrix = _normalize(q_matrix)
 
-            selected_idxs = []
-            if _FAISS_AVAILABLE and q_matrix.shape[0] >= 1:
-                index = faiss.IndexFlatIP(q_matrix.shape[1])
-                index.add(q_matrix)
-                sims, idxs = index.search(query_emb.reshape(1, -1), min(top_k, q_matrix.shape[0]))
-                selected_idxs = list(idxs[0])
-                for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
-                    long_term_summary.append({
-                        "rank": pos + 1,
-                        "q_index": int(idx),
-                        "similarity": float(sim),
-                        "q_embedding": stored_q_embs[idx],
-                        "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
-                    })
-            else:  # Fallback without FAISS
-                sims = [(idx, float(np.dot(query_emb, vec))) for idx, vec in enumerate(q_matrix)]
-                selected = sorted(sims, key=lambda x: x[1], reverse=True)[:top_k]
-                selected_idxs = [idx for idx, _ in selected]
-                for pos, (idx, sim) in enumerate(selected):
-                    long_term_summary.append({
-                        "rank": pos + 1,
-                        "q_index": int(idx),
-                        "similarity": float(sim),
-                        "q_embedding": stored_q_embs[idx],
-                        "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
-                    })
-            # Compute centroid of selected embeddings
-            if selected_idxs:
-                selected_embs = np.array([stored_q_embs[idx] for idx in selected_idxs], dtype=np.float32)
-                centroid_embedding = selected_embs.mean(axis=0).tolist()
-    except Exception as e:
-        logging.error(f"Failed to compute long_term_summary: {e}")
+    #         selected_idxs = []
+    #         if _FAISS_AVAILABLE and q_matrix.shape[0] >= 1:
+    #             index = faiss.IndexFlatIP(q_matrix.shape[1])
+    #             index.add(q_matrix)
+    #             sims, idxs = index.search(query_emb.reshape(1, -1), min(top_k, q_matrix.shape[0]))
+    #             selected_idxs = list(idxs[0])
+    #             for pos, (idx, sim) in enumerate(zip(idxs[0], sims[0])):
+    #                 long_term_summary.append({
+    #                     "rank": pos + 1,
+    #                     "q_index": int(idx),
+    #                     "similarity": float(sim),
+    #                     "q_embedding": stored_q_embs[idx],
+    #                     "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
+    #                 })
+    #         else:  # Fallback without FAISS
+    #             sims = [(idx, float(np.dot(query_emb, vec))) for idx, vec in enumerate(q_matrix)]
+    #             selected = sorted(sims, key=lambda x: x[1], reverse=True)[:top_k]
+    #             selected_idxs = [idx for idx, _ in selected]
+    #             for pos, (idx, sim) in enumerate(selected):
+    #                 long_term_summary.append({
+    #                     "rank": pos + 1,
+    #                     "q_index": int(idx),
+    #                     "similarity": float(sim),
+    #                     "q_embedding": stored_q_embs[idx],
+    #                     "ans_embedding": stored_a_embs[idx] if idx < len(stored_a_embs) else None
+    #                 })
+    #         # Compute centroid of selected embeddings
+    #         if selected_idxs:
+    #             selected_embs = np.array([stored_q_embs[idx] for idx in selected_idxs], dtype=np.float32)
+    #             centroid_embedding = selected_embs.mean(axis=0).tolist()
+    # except Exception as e:
+    #     logging.error(f"Failed to compute long_term_summary: {e}")
 
-    # You can now include the centroid in your output if needed:
-    output = {
-        "long_term_summary": long_term_summary,
-        "centroid_embedding": centroid_embedding
-    }
+    # # You can now include the centroid in your output if needed:
+    # output = {
+    #     "long_term_summary": long_term_summary,
+    #     "centroid_embedding": centroid_embedding
+    # }
     # print(f"Long-term summary: {context_str}")  # Debugging output
 
     # 5. Construct the input for the RAG chain
@@ -228,8 +228,7 @@ async def invoke_finance_agent_chain(
         "location": location,
         "crop_name": crop_name,
         "weather": weather,
-        "short_term_history": short_term_history,
-        "long_term_summary": centroid_embedding
+        
     }
 
     # 6. Stream the response

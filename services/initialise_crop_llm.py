@@ -138,11 +138,7 @@ Weather: {weather}
 GENERAL CONTEXT:
 {general_context}
 
-SHORT-TERM HISTORY:
-{short_term_history}
 
-LONG-TERM SUMMARY:
-{long_term_summary}
 
 FARMER QUERY:
 {query}
@@ -157,8 +153,8 @@ Answer (concise, <120 words, actionable, no repetition):"""
             "location": itemgetter("location"),
             "crop_name": itemgetter("crop_name"),
             "weather": itemgetter("weather"),
-            "short_term_history": itemgetter("short_term_history"),
-            "long_term_summary": itemgetter("long_term_summary"),
+            # "short_term_history": itemgetter("short_term_history"),
+            # "long_term_summary": itemgetter("long_term_summary"),
         }
         | prompt
         | llm

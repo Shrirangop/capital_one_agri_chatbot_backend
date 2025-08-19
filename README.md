@@ -3,7 +3,7 @@
 
 Welcome to the Agri Chatbot Backend! This powerful and intelligent chatbot is designed to be your go-to assistant for all things agriculture. Powered by a sophisticated RAG (Retrieval-Augmented Generation) model and a multi-index setup, this chatbot can provide you with information on a wide range of topics, including crop management, financing options, and the best tools for the job.
 
-
+---
 
 ## ✨ Functionalities
 
@@ -13,6 +13,37 @@ Our Agri Chatbot is packed with features to make your farming journey easier and
 * **💬 WhatsApp Integration**: Interact with the chatbot on the go! With our dedicated webhook, you can connect the chatbot to your WhatsApp Business Account and get instant assistance right from your phone.
 * **💾 User Data Storage**: We've got you covered. Our backend includes an endpoint to save user data in a MongoDB database, so you can pick up right where you left off.
 * **❤️ Health Check**: Keep your chatbot running smoothly. We've included a health check endpoint to monitor the status of the application and its database connection.
+
+---
+
+## 🛠️ Technologies Used
+
+This project is built with a modern and powerful stack:
+
+* **Web Framework & Server**:
+    * FastAPI
+    * Uvicorn
+    * Gunicorn
+* **Core LangChain and AI Suite**:
+    * LangChain
+    * LangChain Core
+    * LangChain Community
+    * LangChain Groq
+    * LangChain HuggingFace
+    * Sentence-Transformers
+* **Vector Database and Connectors**:
+    * LangChain Pinecone
+    * Pinecone Client
+    * FAISS (CPU)
+    * Motor
+    * PyMongo
+* **Data Handling**:
+    * Pandas
+    * NumPy
+* **Utilities**:
+    * PyPDF
+    * Python-DotEnv
+    * Boto3
 
 ---
 
